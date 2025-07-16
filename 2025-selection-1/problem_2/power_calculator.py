@@ -1,14 +1,14 @@
-def main(base: float, exponent: int)->float:
+def main()->None:
     try: 
         base=float(input("Enter number: "))
-    except:
+    except ValueError:
         print('Invalid number input.')
-        return 1
+        return
     try:
         exponent=int(input("Enter exponent: "))
-    except:
+    except ValueError:
         print('Invalid exponent input.')
-        return 1
+        return
     result=1
 
     if base==0:
@@ -16,14 +16,14 @@ def main(base: float, exponent: int)->float:
             result = 0
         elif exponent <0:
             print('not defined')
-            return 1
+            return
         elif exponent == 0:
             result=1
     else:
         for _ in range(abs(exponent)):
             result*=base
 
-        if exponent<0:
+        if exponent<0:  
             result=1.0/result
 
 
