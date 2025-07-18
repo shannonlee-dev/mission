@@ -1,6 +1,6 @@
 # 패키지 목록을 최신화하고, gh를 설치합니다.
-flatpak-spawn --host bashsudo apt update
-sudo apt install gh -y
+flatpak-spawn --host bashsudo apt update\n
+sudo apt install gh -y\n
 gh auth login
 
 https://github.com/login/device
