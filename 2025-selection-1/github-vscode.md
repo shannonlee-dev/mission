@@ -1,4 +1,22 @@
 # 패키지 목록을 최신화하고, gh를 설치합니다.
+
+JSON
+
+{
+"terminal.integrated.defaultProfile.linux": "Host Bash PTY",
+"terminal.integrated.profiles.linux": {
+  "Host Bash PTY": {
+    "path": "/usr/bin/flatpak-spawn",
+    "args": [
+      "--host",
+      "script", "-q", "-c", "bash -l", "/dev/null"
+    ],
+  }
+},
+  
+
+
+
 flatpak-spawn --host bash
 
 sudo apt install gh -y
