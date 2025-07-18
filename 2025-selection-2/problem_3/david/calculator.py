@@ -1,47 +1,47 @@
 import sys
 
-def main():
+def add(a:int,b:int)->int:
+    return a+b
+def subtract(a:int,b:int)->int:
+    return a-b
+def multiply(a:int,b:int)->int:
+    return a*b
+def divide(a:int,b:int)->int:
+    if b==0:
+        raise ZeroDivisionError("Error: Division by zero.")
+    return a/b
+
+
+def interactive_mode()->None:
     try:
-        number_1=float(input('first number:'))
-        number_2=float(input('second number:'))
+        number_1=int(float(input('first number:')))
+        number_2=int(float(input('second number:')))
     except ValueError:
         print("Invalid number input.")
         sys.exit(1)
     
-    operator=['+','-','*','/']
+    operator={
+            '+':add,
+            '-':subtract,
+            '*':multiply,
+            '/':divide
+    }
     
     op=input('operator:')
 
-    try:
-        if op == operator[0]:
-            print(f'result: {add(number_1,number_2)}')
+    func=operator.get(op)
 
-        elif op == operator[1]:
-            print(f'result: {subtract(number_1,number_2)}')
-
-        elif op == operator[2]:
-            print(f'result: {multiply(number_1,number_2)}')
-
-        elif op == operator[3]:
-            print(f'result: {divide(number_1,number_2)}')
-        else:
-            print("Invalid operator.")
-            sys.exit(1)
-    except ZeroDivisionError as e:
-        print(e)
-        sys.exit(1)     
-
-def add(a,b):
-    return a+b
-def subtract(a,b):
-    return a-b
-def multiply(a,b):
-    return a*b
-def divide(a,b):
-    if b==0:
-        raise ZeroDivisionError("Error: Division by zero.")
+    if func is None:
+        print('Invalid operator.')
         sys.exit(1)
-    return a/b
+    else:
+        try:
+            print(f'Result: {func(number_1,number_2)}')
+        except ZeroDivisionError as e:
+            print(e)
+    
+def main():
+    interactive_mode()
 
 if __name__=='__main__':
     main()
