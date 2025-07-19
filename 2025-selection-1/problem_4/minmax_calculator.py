@@ -1,42 +1,52 @@
 import sys 
 
-class EmptyError(ValueError):
+class EmptyInputError(ValueError):
     pass
 
-def find_max_min(float_numbers:list[float])-> tuple[float,float]:
+def find_min_max(float_numbers:list[float])-> tuple[float,float]:
     
     if not float_numbers:
-        raise EmptyError('Empty one more number')
+        raise EmptyInputError('Enter one more number')
 
-    max_x=float_numbers[0]
-    min_y=float_numbers[0]
+    first=float_numbers[0]
+
+    max_num=first
+    min_num=first
+    POS_inf = float('+inf')
+    NEG_inf = float('-inf')
 
     for i in float_numbers:
-        if i > max_x:
-            max_x = i
-        if i < min_y:
-            min_y = i
+        if i == POS_inf or i == NEG_inf:
+            raise ValueError("Infinity not allowed")
+        if i != i:
+            raise ValueError("NaN not allowed")
+    
+    for i in float_numbers:
+        if i > max_num:
+            max_num = i
+        if i < min_num:
+            min_num = i
 
-    return max_x,min_y
+    return min_num,max_num
 
-def convert_to_float(str_numbers:str)->list:
+def convert_to_float(str_numbers:str)->list[float]:
     token = str_numbers.split()
     if not token:
-        raise EmptyError('Enter one more number')
+        raise EmptyInputError('Enter one more number')
     return [float(i) for i in token]
 
 def main():
-    input_str = input("Enter numbers separted by spaces: ")
+    input_str = input("Enter numbers separated by spaces: ")
     try:
         input_float = convert_to_float(input_str)
-        max_value,min_value = find_max_min(input_float)
-        print(f"Max: {max_value}, Min: {min_value}")
+        min_value,max_value = find_min_max(input_float)
+        print(f"Min: {min_value},Max: {max_value}")
     
-    except EmptyError as e:
+    except EmptyInputError as e:
         print(e)
         sys.exit(1)
 
-    except ValueError:
+    except ValueError as e:
         print('Invalid input.')
         sys.exit(1)
 
