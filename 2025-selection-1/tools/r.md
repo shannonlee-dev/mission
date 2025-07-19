@@ -1,6 +1,4 @@
-git clone https://github.com/shannonlee-dev/ia-codyssey.git.
-
-
+git clone https://github.com/shannonlee-dev/ia-codyssey.git
 
 c4r4s4% git init
 hint: Using 'master' as the name for the initial branch. This default branch name
