@@ -15,8 +15,6 @@ def find_min(numbers:list[float])->float:
 
     return min_num
 
-
-
 # list 내부에서만 sort 하는 함수
 def sort(numbers:list[float])->list[float]:
     
