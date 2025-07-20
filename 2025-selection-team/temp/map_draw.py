@@ -11,7 +11,6 @@ import matplotlib
 matplotlib.use('Agg')  # 반드시 plt, patches 등 import 전에 실행
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import os
 import sys
 
 

@@ -9,8 +9,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from collections import deque
-import os
 import sys
+# map_draw.py의 지도 그리기 함수들을 import
+from map_draw import setup_map_figure, draw_structures, add_legend
 
 
 def load_map_data():
@@ -157,74 +158,11 @@ def visualize_path_on_map(complete_df, path, target_cafe, construction_sites, fi
     try:
         print('🎨 최종 지도 시각화 시작...')
         
-        # 좌표 범위 계산
-        x_min, x_max = complete_df['x'].min(), complete_df['x'].max()
-        y_min, y_max = complete_df['y'].min(), complete_df['y'].max()
+        # map_draw.py의 setup_map_figure 함수 사용
+        fig, ax, coord_range = setup_map_figure(complete_df)
         
-        # figure 설정
-        fig_width = max(12, (x_max - x_min + 1) * 0.8)
-        fig_height = max(10, (y_max - y_min + 1) * 0.8)
-        
-        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
-        
-        # 좌표계 설정 (왼쪽 상단이 (1,1))
-        ax.set_xlim(x_min - 0.5, x_max + 0.5)
-        ax.set_ylim(y_max + 0.5, y_min - 0.5)
-        
-        # 격자선 그리기
-        for x in range(x_min, x_max + 1):
-            ax.axvline(x=x + 0.5, color='lightgray', linestyle='-', alpha=0.7)
-            ax.axvline(x=x - 0.5, color='lightgray', linestyle='-', alpha=0.7)
-        
-        for y in range(y_min, y_max + 1):
-            ax.axhline(y=y + 0.5, color='lightgray', linestyle='-', alpha=0.7)
-            ax.axhline(y=y - 0.5, color='lightgray', linestyle='-', alpha=0.7)
-        
-        # 구조물 그리기
-        structure_counts = {'Apartment': 0, 'Building': 0, 'BandalgomCoffee': 0, 'MyHome': 0, 'ConstructionSite': 0}
-        
-        for _, row in complete_df.iterrows():
-            x, y = row['x'], row['y']
-            struct_type = row['struct']
-            is_construction = row['ConstructionSite'] == 1
-            
-            # 공사장 우선 처리
-            if is_construction:
-                # 회색 사각형 (공사장)
-                rect = patches.Rectangle((x - 0.4, y - 0.4), 0.8, 0.8, 
-                                       linewidth=1, edgecolor='black', 
-                                       facecolor='gray', alpha=0.8)
-                ax.add_patch(rect)
-                structure_counts['ConstructionSite'] += 1
-                continue
-            
-            # 다른 구조물들
-            if struct_type == 'Apartment':
-                circle = patches.Circle((x, y), 0.3, linewidth=1, 
-                                      edgecolor='black', facecolor='brown', alpha=0.8)
-                ax.add_patch(circle)
-                structure_counts['Apartment'] += 1
-                
-            elif struct_type == 'Building':
-                circle = patches.Circle((x, y), 0.3, linewidth=1, 
-                                      edgecolor='black', facecolor='brown', alpha=0.8)
-                ax.add_patch(circle)
-                structure_counts['Building'] += 1
-                
-            elif struct_type == 'BandalgomCoffee':
-                rect = patches.Rectangle((x - 0.3, y - 0.3), 0.6, 0.6, 
-                                       linewidth=1, edgecolor='black', 
-                                       facecolor='green', alpha=0.8)
-                ax.add_patch(rect)
-                structure_counts['BandalgomCoffee'] += 1
-                
-            elif struct_type == 'MyHome':
-                # 삼각형 (집)
-                triangle_points = [(x, y - 0.35), (x - 0.3, y + 0.2), (x + 0.3, y + 0.2)]
-                triangle = patches.Polygon(triangle_points, linewidth=1, 
-                                         edgecolor='black', facecolor='green', alpha=0.8)
-                ax.add_patch(triangle)
-                structure_counts['MyHome'] += 1
+        # map_draw.py의 draw_structures 함수 사용
+        structure_counts = draw_structures(ax, complete_df)
         
         # 경로를 빨간색 선으로 그리기
         if path and len(path) > 1:
@@ -244,16 +182,14 @@ def visualize_path_on_map(complete_df, path, target_cafe, construction_sites, fi
             ax.plot(end_x, end_y, 'ro', markersize=8, markerfacecolor='orange', 
                    markeredgecolor='darkorange', label=f'Target Cafe {target_cafe}')
         
-        # 범례 및 제목 설정
-        ax.legend(loc='upper right', fontsize=10)
-        ax.set_xlabel('X Coordinate', fontsize=12)
-        ax.set_ylabel('Y Coordinate', fontsize=12)
+        # 범례 추가 (기존 범례에 경로 정보 추가)
+        add_legend(ax)
+        if path:
+            ax.legend(loc='upper right', fontsize=10)
+        
+        # 제목 수정 (경로 정보 포함)
         ax.set_title(f'Shortest Path from MyHome to BandalgomCoffee\nPath Length: {len(path) if path else 0} steps', 
                     fontsize=16, fontweight='bold')
-        
-        # 축 눈금 설정
-        ax.set_xticks(range(x_min, x_max + 1))
-        ax.set_yticks(range(y_min, y_max + 1))
         
         # 이미지 저장
         plt.tight_layout()
@@ -263,15 +199,10 @@ def visualize_path_on_map(complete_df, path, target_cafe, construction_sites, fi
         print(f'🎯 최종 지도가 {filename} 파일로 저장되었습니다.')
         
         # 구조물 개수 출력
+        print('구조물 분포:', end=' ')
         for struct_type, count in structure_counts.items():
-            korean_names = {
-                'Apartment': 'Apartment',
-                'Building': 'Building', 
-                'BandalgomCoffee': 'BandalgomCoffee',
-                'MyHome': 'MyHome',
-                'ConstructionSite': 'ConstructionSite'
-            }
-            print(f'{korean_names[struct_type]}: {count}개', end=', ')
+            if count > 0:
+                print(f'{struct_type}: {count}개', end=', ')
         print()
         
     except Exception as e:
