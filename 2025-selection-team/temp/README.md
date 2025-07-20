@@ -25,9 +25,6 @@ python -m venv .venv
 # 가상환경 활성화
 # macOS/Linux:
 source .venv/bin/activate
-
-# Windows:
-.venv\Scripts\activate
 ```
 
 #### 3. 의존성 설치
