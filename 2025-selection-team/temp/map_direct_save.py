@@ -171,21 +171,31 @@ def visualize_path_on_map(complete_df, path, target_cafe, construction_sites, fi
         
         # 경로를 빨간색 선으로 그리기
         if path and len(path) > 1:
+            # 격자 범위 구하기
+            x_min, x_max = complete_df['x'].min(), complete_df['x'].max()
+            y_min, y_max = complete_df['y'].min(), complete_df['y'].max()
+
+            # 경로 좌표 추출
             path_x = [pos[0] for pos in path]
             path_y = [pos[1] for pos in path]
-            
-            ax.plot(path_x, path_y, color='red', linewidth=3, alpha=0.8, 
-                   marker='o', markersize=4, markerfacecolor='red', 
+
+            # 경로가 격자 바깥으로 나갈 경우, 바깥 좌표도 그대로 그림
+            ax.plot(path_x, path_y, color='red', linewidth=6, alpha=0.8,
+                   marker='o', markersize=4, markerfacecolor='red',
                    markeredgecolor='darkred', label=f'Shortest Path ({len(path)} steps)')
-            
-            # 시작점과 끝점 강조 표시
+
+            # 시작점과 끝점 강조 표시 (바깥 좌표도 허용)
             start_x, start_y = path[0]
             end_x, end_y = path[-1]
-            
-            ax.plot(start_x, start_y, 'ro', markersize=8, markerfacecolor='blue', 
+
+            ax.plot(start_x, start_y, 'ro', markersize=8, markerfacecolor='blue',
                    markeredgecolor='darkblue', label='Start (MyHome)')
-            ax.plot(end_x, end_y, 'ro', markersize=8, markerfacecolor='orange', 
+            ax.plot(end_x, end_y, 'ro', markersize=8, markerfacecolor='orange',
                    markeredgecolor='darkorange', label=f'Target Cafe {target_cafe}')
+
+            # 축 범위 확장: 경로가 격자 바깥으로 나가면 자동으로 축을 확장
+            ax.set_xlim(min(x_min, min(path_x)) - 1, max(x_max, max(path_x)) + 1)
+            ax.set_ylim(max(y_max, max(path_y)) + 1, min(y_min, min(path_y)) - 1)
         
         # 범례 추가 (기존 범례에 경로 정보 추가)
         add_legend(ax)
