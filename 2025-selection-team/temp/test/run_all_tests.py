@@ -135,7 +135,7 @@ def check_prerequisites():
         print("⚠️ 일부 데이터 파일이 없습니다. 관련 테스트는 건너뛸 수 있습니다.")
     
     # Python 파일 확인
-    py_files = ['caffee_map.py', 'map_draw.py', 'map_direct_save.py']
+    py_files = ['mas_map.py', 'map_draw.py', 'map_direct_save.py']
     missing_py = []
     
     for file in py_files:
@@ -171,8 +171,8 @@ def main():
     
     # Stage 1 테스트
     print_banner("Stage 1: 데이터 수집 및 분석 테스트")
-    test_results['stage1_unit'] = run_test_file('test_caffee_map.py')
-    test_results['stage1_direct'] = run_direct_module_test('caffee_map', 'Stage 1 직접 실행')
+    test_results['stage1_unit'] = run_test_file('test_mas_map.py')
+    test_results['stage1_direct'] = run_direct_module_test('mas_map', 'Stage 1 직접 실행')
     
     # Stage 2 테스트
     print_banner("Stage 2: 지도 시각화 테스트")

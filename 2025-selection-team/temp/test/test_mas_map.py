@@ -1,7 +1,7 @@
 """
 테스트 케이스: Stage 1 - 데이터 수집 및 분석
 
-caffee_map.py의 기능들을 검증하는 테스트 케이스들을 포함합니다.
+mas_map.py의 기능들을 검증하는 테스트 케이스들을 포함합니다.
 """
 
 import pytest
@@ -13,10 +13,10 @@ import tempfile
 import shutil
 
 
-# caffee_map 모듈을 import하기 위한 경로 설정
+# mas_map 모듈을 import하기 위한 경로 설정
 sys.path.append('/Users/ittae/development/codyssey-team')
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import caffee_map
+import mas_map
 
 
 class TestCaffeeMap:
@@ -35,7 +35,7 @@ class TestCaffeeMap:
             if os.path.basename(os.getcwd()) == 'test':
                 os.chdir('..')
             
-            area_map_df, area_struct_df, area_category_df = caffee_map.load_data_files()
+            area_map_df, area_struct_df, area_category_df = mas_map.load_data_files()
         finally:
             os.chdir(original_cwd)
         
@@ -70,7 +70,7 @@ class TestCaffeeMap:
                 
                 # 파일이 없는 상태에서 실행하면 sys.exit(1)이 호출되어야 함
                 with pytest.raises(SystemExit) as excinfo:
-                    caffee_map.load_data_files()
+                    mas_map.load_data_files()
                 assert excinfo.value.code == 1
             finally:
                 os.chdir(original_cwd)
@@ -83,7 +83,7 @@ class TestCaffeeMap:
             'struct': [' MyHome ', 'Apartment', 'BandalgomCoffee ']
         })
         
-        cleaned_data = caffee_map.clean_category_data(test_data)
+        cleaned_data = mas_map.clean_category_data(test_data)
         
         # 공백 제거 확인
         assert cleaned_data['struct'].iloc[0] == 'MyHome'
@@ -94,10 +94,10 @@ class TestCaffeeMap:
         if not all(os.path.exists(f) for f in ['data/area_map.csv', 'data/area_struct.csv', 'data/area_category.csv']):
             pytest.skip("실제 데이터 파일이 없어서 테스트를 건너뜁니다.")
         
-        area_map_df, area_struct_df, area_category_df = caffee_map.load_data_files()
+        area_map_df, area_struct_df, area_category_df = mas_map.load_data_files()
         
         # convert_struct_ids_to_names 함수 테스트
-        merged_df = caffee_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
+        merged_df = mas_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
         
         # 병합된 데이터 검증
         assert isinstance(merged_df, pd.DataFrame)
@@ -114,11 +114,11 @@ class TestCaffeeMap:
         if not all(os.path.exists(f) for f in ['data/area_map.csv', 'data/area_struct.csv', 'data/area_category.csv']):
             pytest.skip("실제 데이터 파일이 없어서 테스트를 건너뜁니다.")
         
-        area_map_df, area_struct_df, area_category_df = caffee_map.load_data_files()
-        merged_df = caffee_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
-        complete_df = caffee_map.merge_all_datasets(area_map_df, merged_df)
+        area_map_df, area_struct_df, area_category_df = mas_map.load_data_files()
+        merged_df = mas_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
+        complete_df = mas_map.merge_all_datasets(area_map_df, merged_df)
         
-        area_1_df = caffee_map.filter_area_1_data(complete_df)
+        area_1_df = mas_map.filter_area_1_data(complete_df)
         
         # 모든 데이터가 구역 1인지 확인
         assert all(area_1_df['area'] == 1)
@@ -141,10 +141,10 @@ def test_main_integration():
     if files_exist:
         # 실제 데이터로 테스트
         try:
-            area_map_df, area_struct_df, area_category_df = caffee_map.load_data_files()
-            merged_df = caffee_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
-            complete_df = caffee_map.merge_all_datasets(area_map_df, merged_df)
-            area_1_df = caffee_map.filter_area_1_data(complete_df)
+            area_map_df, area_struct_df, area_category_df = mas_map.load_data_files()
+            merged_df = mas_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
+            complete_df = mas_map.merge_all_datasets(area_map_df, merged_df)
+            area_1_df = mas_map.filter_area_1_data(complete_df)
             
             # 기본적인 데이터 검증
             assert not area_1_df.empty
