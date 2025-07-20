@@ -6,6 +6,8 @@ Stage 3: 최단 경로 찾기
 """
 
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # 반드시 plt, patches 등 import 전에 실행
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from collections import deque
@@ -91,39 +93,44 @@ def create_grid_map(complete_df):
 def bfs_shortest_path(start_pos, target_positions, valid_positions, construction_sites):
     """BFS 알고리즘을 사용하여 최단 경로를 찾습니다."""
     print(f'🔍 최단 경로 탐색 시작: {start_pos} → {target_positions}')
-    
-    # BFS를 위한 큐와 방문 기록
-    queue = deque([(start_pos, [start_pos])])
-    visited = {start_pos}
-    
-    # 이동 방향 (상, 하, 좌, 우)
-    directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
-    
-    while queue:
-        current_pos, path = queue.popleft()
-        
-        # 목표 위치 중 하나에 도달했는지 확인
-        if current_pos in target_positions:
-            print(f'✅ 최단 경로 발견! 길이: {len(path)} 단계')
-            return path, current_pos
-        
-        # 인접한 위치들 탐색
-        x, y = current_pos
-        for dx, dy in directions:
-            next_x, next_y = x + dx, y + dy
-            next_pos = (next_x, next_y)
-            
-            # 유효성 검사
-            if (next_pos in valid_positions and 
-                next_pos not in visited and 
-                next_pos not in construction_sites):
-                
-                visited.add(next_pos)
-                new_path = path + [next_pos]
-                queue.append((next_pos, new_path))
-    
-    print('❌ 경로를 찾을 수 없습니다.')
-    return None, None
+    # 도착점이 여러 개일 때 각각 BFS로 최단 경로를 구하고, 가장 짧은 경로를 선택
+    min_path = None
+    min_target = None
+    min_length = float('inf')
+
+    for target in target_positions:
+        queue = deque([(start_pos, [start_pos])])
+        visited = {start_pos}
+        directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+
+        found = False
+        while queue:
+            current_pos, path = queue.popleft()
+            if current_pos == target:
+                if len(path) < min_length:
+                    min_length = len(path)
+                    min_path = path
+                    min_target = target
+                found = True
+                break
+            x, y = current_pos
+            for dx, dy in directions:
+                next_x, next_y = x + dx, y + dy
+                next_pos = (next_x, next_y)
+                if (next_pos in valid_positions and 
+                    next_pos not in visited and 
+                    next_pos not in construction_sites):
+                    visited.add(next_pos)
+                    new_path = path + [next_pos]
+                    queue.append((next_pos, new_path))
+        # 다음 도착점으로 계속 탐색
+
+    if min_path is not None:
+        print(f'✅ 최단 경로 발견! 길이: {min_length} 단계, 도착점: {min_target}')
+        return min_path, min_target
+    else:
+        print('❌ 경로를 찾을 수 없습니다.')
+        return None, None
 
 
 def save_path_to_csv(path, target_cafe, filename='home_to_cafe.csv'):
@@ -185,7 +192,7 @@ def visualize_path_on_map(complete_df, path, target_cafe, construction_sites, fi
         # 범례 추가 (기존 범례에 경로 정보 추가)
         add_legend(ax)
         if path:
-            ax.legend(loc='upper right', fontsize=10)
+            ax.legend(loc='upper left', fontsize=10)
         
         # 제목 수정 (경로 정보 포함)
         ax.set_title(f'Shortest Path from MyHome to BandalgomCoffee\nPath Length: {len(path) if path else 0} steps', 
