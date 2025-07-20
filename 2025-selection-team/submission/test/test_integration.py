@@ -17,7 +17,7 @@ from unittest.mock import patch
 # 프로젝트 모듈들을 import하기 위한 경로 설정
 sys.path.append('/Users/ittae/development/codyssey-team')
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import caffee_map
+import mas_map
 import map_draw
 import map_direct_save
 
@@ -76,9 +76,9 @@ class TestProjectIntegration:
             pytest.skip("데이터 파일이 없어서 데이터 흐름 테스트를 건너뜁니다.")
         
         # Stage 1: 데이터 분석
-        area_map_df, area_struct_df, area_category_df = caffee_map.load_data_files()
-        merged_df = caffee_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
-        complete_df = caffee_map.merge_all_datasets(area_map_df, merged_df)
+        area_map_df, area_struct_df, area_category_df = mas_map.load_data_files()
+        merged_df = mas_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
+        complete_df = mas_map.merge_all_datasets(area_map_df, merged_df)
         
         # Stage 2: 동일한 데이터 구조 확인
         complete_df = map_draw.load_analyzed_data()
@@ -136,10 +136,10 @@ class TestProjectIntegration:
             
             # Stage 1: 데이터 분석 실행
             print("🔄 Stage 1 실행 중...")
-            area_map_df, area_struct_df, area_category_df = caffee_map.load_data_files()
-            merged_df = caffee_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
-            complete_df = caffee_map.merge_all_datasets(area_map_df, merged_df)
-            area_1_df = caffee_map.filter_area_1_data(complete_df)
+            area_map_df, area_struct_df, area_category_df = mas_map.load_data_files()
+            merged_df = mas_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
+            complete_df = mas_map.merge_all_datasets(area_map_df, merged_df)
+            area_1_df = mas_map.filter_area_1_data(complete_df)
             
             assert not area_1_df.empty, "Stage 1: 구역 1 데이터가 비어있습니다."
             
@@ -221,7 +221,7 @@ class TestProjectIntegration:
         """프로젝트 구조 준수 검증"""
         # 필수 Python 파일들 확인
         required_py_files = [
-            'caffee_map.py',
+            'mas_map.py',
             'map_draw.py', 
             'map_direct_save.py'
         ]
@@ -234,7 +234,7 @@ class TestProjectIntegration:
         
         # 테스트 파일들 확인
         test_files = [
-            'test/test_caffee_map.py',
+            'test/test_mas_map.py',
             'test/test_map_draw.py',
             'test/test_map_direct_save.py'
         ]
@@ -246,7 +246,7 @@ class TestProjectIntegration:
     
     def test_korean_coding_style(self):
         """한국어 코딩 스타일 가이드 준수 검증"""
-        py_files = ['caffee_map.py', 'map_draw.py', 'map_direct_save.py']
+        py_files = ['mas_map.py', 'map_draw.py', 'map_direct_save.py']
         
         for file in py_files:
             if os.path.exists(file):
@@ -271,9 +271,9 @@ def test_performance_benchmark():
     
     # Stage 1 성능 측정
     start_time = time.time()
-    area_map_df, area_struct_df, area_category_df = caffee_map.load_data_files()
-    merged_df = caffee_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
-    complete_df = caffee_map.merge_all_datasets(area_map_df, merged_df)
+    area_map_df, area_struct_df, area_category_df = mas_map.load_data_files()
+    merged_df = mas_map.convert_struct_ids_to_names(area_struct_df, area_category_df)
+    complete_df = mas_map.merge_all_datasets(area_map_df, merged_df)
     stage1_time = time.time() - start_time
     
     # Stage 3 경로 찾기 성능 측정
