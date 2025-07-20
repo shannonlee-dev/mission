@@ -9,7 +9,7 @@ Provide project context and coding guidelines that AI should follow when generat
 - Convert structure IDs to names based on `area_category.csv`.
 - Merge the three datasets into a single DataFrame and sort by area.
 - Filter and output only area 1 data, as the confirmed data shows that Bandalkom Coffee is concentrated in area 1, making information from other areas unnecessary.
-- Save the result code as `caffee_map.py`.
+- Save the result code as `mas_map.py`.
 
 ## Stage 2: Map Visualization
 

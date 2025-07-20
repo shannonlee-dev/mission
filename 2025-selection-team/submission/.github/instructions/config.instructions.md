@@ -14,7 +14,7 @@ There are three CSV files: `area_map.csv`, `area_struct.csv`, and `area_category
 - `area_category.csv`: Reference data that maps structure type IDs to names.
 
 The code for each stage should be written in the following files:
-- Stage 1: `caffee_map.py` (Data Analysis)
+- Stage 1: `mas_map.py` (Data Analysis)
 - Stage 2: `map_draw.py` (Map Visualization)
 - Stage 3: `map_direct_save.py` (Path Finding)
 

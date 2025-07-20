@@ -13,12 +13,12 @@ codyssey-team/
 │   └── area_category.csv          # 카테고리 ID to 구조물 이름 매핑
 ├── test/                          # 테스트 파일들
 │   ├── __init__.py                # 테스트 패키지 초기화
-│   ├── test_caffee_map.py         # Stage 1 테스트
+│   ├── test_mas_map.py            # Stage 1 테스트
 │   ├── test_map_draw.py           # Stage 2 테스트
 │   ├── test_map_direct_save.py    # Stage 3 테스트
 │   ├── test_integration.py        # 통합 테스트
 │   └── run_all_tests.py           # 전체 테스트 실행 스크립트
-├── caffee_map.py                  # Stage 1: 데이터 수집 및 분석
+├── mas_map.py                     # Stage 1: 데이터 수집 및 분석
 ├── map_draw.py                    # Stage 2: 지도 시각화  
 ├── map_direct_save.py             # Stage 3: 최단 경로 찾기
 ├── run_tests.py                   # 테스트 실행 편의 스크립트
@@ -27,9 +27,9 @@ codyssey-team/
 
 ## 🧪 테스트 카테고리
 
-### 1. Stage 1: 데이터 수집 및 분석 테스트 (`test/test_caffee_map.py`)
+### 1. Stage 1: 데이터 수집 및 분석 테스트 (`test/test_mas_map.py`)
 
-**테스트 대상**: `caffee_map.py`
+**테스트 대상**: `mas_map.py`
 
 #### ✅ 테스트 케이스들:
 - **`test_load_data_files_success`**: CSV 파일 로드 및 구조 검증
@@ -173,7 +173,7 @@ python -m pytest test/ -v
 ### 개별 Stage 테스트
 ```bash
 # Stage 1 테스트
-python -m pytest test/test_caffee_map.py -v
+python -m pytest test/test_mas_map.py -v
 
 # Stage 2 테스트  
 python -m pytest test/test_map_draw.py -v
@@ -188,7 +188,7 @@ python -m pytest test/test_integration.py -v
 ### 실제 프로그램 실행
 ```bash
 # Stage 1 실행
-python caffee_map.py
+python mas_map.py
 
 # Stage 2 실행
 python map_draw.py
