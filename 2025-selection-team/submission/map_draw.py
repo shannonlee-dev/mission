@@ -1,11 +1,3 @@
-"""
-Stage 2: 지도 시각화
-
-이 모듈은 분석된 데이터를 기반으로 지역 지도를 시각화합니다.
-좌표계는 왼쪽 상단을 (1,1)로, 오른쪽 하단을 가장 큰 좌표로 설정하며,
-각 구조물을 지정된 색상과 모양으로 표현합니다.
-"""
-
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')  # 반드시 plt, patches 등 import 전에 실행
@@ -33,7 +25,7 @@ def load_analyzed_data():
         merged_df = pd.merge(area_struct_df, area_category_df, on='category', how='left')
         merged_df['struct'] = merged_df['struct'].fillna('Empty')
         
-        # 전체 데이터 병합 (모든 구역 포함)
+        # 전체 데이터 병합 (모든 area 포함)
         complete_df = pd.merge(area_map_df, merged_df, on=['x', 'y'], how='inner')
         
         print(f'✅ 전체 지도 데이터 로드 완료: {len(complete_df)}개 레코드')
