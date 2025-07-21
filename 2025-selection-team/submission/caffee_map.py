@@ -23,9 +23,6 @@ def load_data_files():
             print(f'=====\n{file}\n=====')
         sys.exit(1)
     
-
-    dataframes = {}
-    
     try:
         # area_map.csv 로드
         print('area_map.csv 로딩 중...')
@@ -52,7 +49,6 @@ def load_data_files():
         
         print(area_map_df,'\n')
 
-        dataframes['area_map'] = area_map_df
         
         # area_struct.csv 로드 
         print('area_struct.csv 로딩 중...')
@@ -78,7 +74,6 @@ def load_data_files():
         
         print(area_struct_df,'\n')
 
-        dataframes['area_struct'] = area_struct_df
         
         # area_category.csv 로드
         print('area_category.csv 로딩 중...')
@@ -107,21 +102,9 @@ def load_data_files():
                     
         print(area_category_df,'\n')
 
-        dataframes['area_category'] = area_category_df
-        # dataframes 통합 완료.
+        # 1부 끝
 
-
-
-
-
-
-
-
-
-
-
-
-        # area_map과 area_struct 간의 좌표 일관성 확인
+        # 2부 시작
         map_coords = set(zip(area_map_df['x'], area_map_df['y']))
         struct_coords = set(zip(area_struct_df['x'], area_struct_df['y']))
         
@@ -130,27 +113,28 @@ def load_data_files():
             missing_in_map = struct_coords - map_coords
             
             if missing_in_struct:
-                print(f'⚠️ 경고: area_struct.csv에서 누락된 좌표 {len(missing_in_struct)}개')
+                print(f'경고: area_struct.csv에서 누락된 좌표 {len(missing_in_struct)}개')
             if missing_in_map:
-                print(f'⚠️ 경고: area_map.csv에서 누락된 좌표 {len(missing_in_map)}개')
+                print(f'경고: area_map.csv에서 누락된 좌표 {len(missing_in_map)}개')
         
-        print('✅ 모든 데이터 파일이 성공적으로 로딩되었습니다.')
+        print('데이터 로딩 완료...')
+
         return area_map_df, area_struct_df, area_category_df
         
     except FileNotFoundError as e:
-        print(f'❌ 파일을 찾을 수 없습니다: {e}')
+        print(f'파일을 찾을 수 없습니다: {e}')
         sys.exit(1)
     except pd.errors.EmptyDataError:
-        print(f'❌ 파일이 비어있거나 잘못된 형식입니다.')
+        print(f'파일이 비어있거나 잘못된 형식입니다.')
         sys.exit(1)
     except pd.errors.ParserError as e:
-        print(f'❌ CSV 파일 파싱 오류: {e}')
+        print(f'CSV 파일 파싱 오류: {e}')
         sys.exit(1)
     except ValueError as e:
-        print(f'❌ 데이터 검증 오류: {e}')
+        print(f'데이터 검증 오류: {e}')
         sys.exit(1)
     except Exception as e:
-        print(f'❌ 예상치 못한 오류가 발생했습니다: {e}')
+        print(f'예상치 못한 오류가 발생했습니다: {e}')
         sys.exit(1)
 
 
@@ -167,25 +151,21 @@ def clean_category_data(area_category_df):
             # 누락된 구조물 이름 처리
             missing_struct = area_category_df['struct'].isnull().sum()
             if missing_struct > 0:
-                print(f'⚠️ 경고: {missing_struct}개의 구조물 이름이 누락되어 기본값으로 대체합니다.')
+                print(f'경고: {missing_struct}개의 구조물 이름이 누락되어 기본값으로 대체합니다.')
                 area_category_df['struct'] = area_category_df['struct'].fillna('Unknown')
+
         else:
             raise ValueError('area_category.csv에 struct 컬럼이 없습니다.')
-            
-        # 중복된 카테고리 확인
-        if area_category_df['category'].duplicated().any():
-            print('⚠️ 경고: 중복된 카테고리 번호가 발견되었습니다. 첫 번째 항목을 사용합니다.')
-            area_category_df = area_category_df.drop_duplicates(subset=['category'], keep='first')
-            
+        
         return area_category_df
         
     except Exception as e:
-        print(f'❌ 카테고리 데이터 정리 중 오류 발생: {e}')
+        print(f'area_category.csv 데이터 정리 중 오류 발생: {e}')
         raise
 
 
 def convert_struct_ids_to_names(area_struct_df, area_category_df):
-    """오류 처리와 함께 area_category 매핑을 사용하여 구조물 카테고리 ID를 이름으로 변환합니다."""
+    """area_category 매핑을 사용하여 구조물 카테고리 ID를 이름으로 변환합니다."""
     try:
         # 먼저 카테고리 데이터를 정리
         area_category_df = clean_category_data(area_category_df)
@@ -193,30 +173,21 @@ def convert_struct_ids_to_names(area_struct_df, area_category_df):
         # area_struct_df에서 누락된 카테고리 값 확인
         missing_categories = area_struct_df['category'].isnull().sum()
         if missing_categories > 0:
-            print(f'⚠️ 경고: {missing_categories}개의 카테고리 값이 누락되어 0으로 대체합니다.')
+            print(f'경고: {missing_categories}개의 카테고리 값이 누락되어 0으로 대체합니다.')
             area_struct_df['category'] = area_struct_df['category'].fillna(0)
         
-        # area_struct를 area_category와 병합하여 구조물 이름 가져오기
-        merged_df = pd.merge(
-            area_struct_df, 
-            area_category_df, 
-            on='category', 
-            how='left'
-        )
+        # area_category의 매핑을 사용하여 category를 struct 이름으로 덮어쓰기
+        category_map = dict(zip(area_category_df['category'], area_category_df['struct']))
+        area_struct_df['struct'] = area_struct_df['category'].map(category_map)
+       
+        # 카테고리 값이 0인 경우 구조물 이름을 'Empty'로 설정
+        area_struct_df.loc[area_struct_df['category'] == 0, 'struct'] = 'Empty'
         
-        # 카테고리 0 (구조물 없음) 또는 매칭되지 않는 카테고리의 경우 구조물 이름을 'Empty'로 설정
-        unmatched_count = merged_df['struct'].isnull().sum()
-        if unmatched_count > 0:
-            unmatched_categories = merged_df[merged_df['struct'].isnull()]['category'].unique()
-            print(f'⚠️ 경고: {unmatched_count}개의 매칭되지 않은 카테고리({unmatched_categories})를 Empty로 설정합니다.')
-            
-        merged_df['struct'] = merged_df['struct'].fillna('Empty')
+        area_struct_df = area_struct_df.drop(columns=['category'])
         
-        # 병합 결과 검증
-        if len(merged_df) != len(area_struct_df):
-            print(f'⚠️ 경고: 병합 후 레코드 수가 변경되었습니다. (원본: {len(area_struct_df)}, 병합 후: {len(merged_df)})')
-        
-        return merged_df
+        print(area_struct_df)
+
+        return area_struct_df
         
     except Exception as e:
         print(f'❌ 구조물 ID를 이름으로 변환하는 중 오류 발생: {e}')
@@ -229,34 +200,35 @@ def merge_all_datasets(area_map_df, area_struct_with_names_df):
         # 병합 전 좌표 불일치 확인
         map_coords = set(zip(area_map_df['x'], area_map_df['y']))
         struct_coords = set(zip(area_struct_with_names_df['x'], area_struct_with_names_df['y']))
-        
-        common_coords = map_coords & struct_coords
+
         map_only = map_coords - struct_coords  
         struct_only = struct_coords - map_coords
         
         if map_only:
-            print(f'⚠️ 경고: area_map.csv에만 있는 좌표 {len(map_only)}개가 병합에서 제외됩니다.')
+            print(f'경고: area_map.csv에만 있는 좌표 {len(map_only)}개가 병합에서 제외됩니다.')
         if struct_only:
-            print(f'⚠️ 경고: area_struct.csv에만 있는 좌표 {len(struct_only)}개가 병합에서 제외됩니다.')
+            print(f'경고: area_struct.csv에만 있는 좌표 {len(struct_only)}개가 병합에서 제외됩니다.')
         
         # area_map을 area_struct (구조물 이름 포함)와 병합
         complete_df = pd.merge(
             area_map_df,
             area_struct_with_names_df,
             on=['x', 'y'],
-            how='inner'
-        )
-        
+            how='outer'
+        )      
         # 병합 결과 검증
         if complete_df.empty:
-            raise ValueError('병합 결과가 비어있습니다. 공통 좌표가 없는지 확인하세요.')
+            raise ValueError('병합 결과가 비어있습니다.')
             
-        print(f'✅ 데이터 병합 완료: {len(complete_df)}개 레코드 생성 (공통 좌표: {len(common_coords)}개)')
+        print(f'데이터 병합 완료: {len(complete_df)}개의 행 생성')
         
+   
+        complete_df = complete_df.sort_values(by='area', ascending=True).reset_index(drop=True)
+        print('\narea 기준 오름차순 정렬 완료')
         return complete_df
         
     except Exception as e:
-        print(f'❌ 데이터셋 병합 중 오류 발생: {e}')
+        print(f'데이터셋 병합 중 오류 발생: {e}')
         raise
 
 
@@ -282,7 +254,7 @@ def filter_area_1_data(complete_df):
         # 깔끔한 출력을 위해 인덱스 재설정
         area_1_df = area_1_df.reset_index(drop=True)
         
-        print(f'✅ 구역 1 데이터 필터링 완료: {len(area_1_df)}개 레코드')
+        print(f'✅ 구역 1 데이터 필터링 완료: {len(area_1_df)}개 데이터')
         
         return area_1_df
         
@@ -292,7 +264,7 @@ def filter_area_1_data(complete_df):
 
 
 def analyze_data():
-    """Stage 1 요구사항에 따라 데이터 분석을 수행하는 메인 함수입니다."""
+    """Stage 메인 함수입니다."""
     try:        
         print('데이터 파일을 로딩하는 중...')
         area_map_df, area_struct_df, area_category_df = load_data_files()
@@ -305,36 +277,21 @@ def analyze_data():
         
         # 전체 데이터 개요 표시
         print('\n=== 전체 데이터 개요 ===')
-        print(f'전체 구역의 총 레코드 수: {len(complete_df)}')
-        
-        # 구역 데이터가 있는지 확인
-        if 'area' in complete_df.columns and not complete_df['area'].isnull().all():
-            print('구역별 분포:')
-            area_distribution = complete_df['area'].value_counts().sort_index()
-            print(area_distribution)
-        else:
-            print('⚠️ 경고: 구역 정보를 사용할 수 없습니다.')
-        
-        # 모든 구역에서 내 집 위치 확인
-        if 'struct' in complete_df.columns:
-            my_home_all = complete_df[complete_df['struct'] == 'MyHome']
-            if not my_home_all.empty:
-                home_area = my_home_all.iloc[0]['area'] if 'area' in my_home_all.columns else '알 수 없음'
-                print(f'\n내 집은 구역 {home_area}에 위치 (좌표: x={my_home_all.iloc[0]["x"]}, y={my_home_all.iloc[0]["y"]})')
-            else:
-                print('\n내 집 정보를 찾을 수 없습니다.')
+        print(f'전체 구역의 총 데이터 수: {len(complete_df)}')
+        print(complete_df)
+
         
         print('\n구역 1 데이터로 필터링하는 중...')
         area_1_result = filter_area_1_data(complete_df)
         
         # 구역 1 데이터가 있는지 확인
         if area_1_result.empty:
-            print('❌ 구역 1 데이터가 없어 분석을 중단합니다.')
+            print('구역 1 데이터가 없어 분석을 중단합니다.')
             return area_1_result
         
         # 분석 결과 표시
         print('\n=== 구역 1 분석 결과 ===')
-        print(f'구역 1의 총 레코드 수: {len(area_1_result)}')
+        print(f'구역 1의 총 데이터 수: {len(area_1_result)}')
         
         if 'struct' in area_1_result.columns:
             print('\n구역 1 내 구조물 분포:')
@@ -375,7 +332,7 @@ def analyze_data():
         return area_1_result
         
     except Exception as e:
-        print(f'❌ 데이터 분석 중 치명적 오류 발생: {e}')
+        print(f'데이터 분석 중 치명적 오류 발생: {e}')
         print('분석을 중단합니다.')
         sys.exit(1)
 
@@ -388,14 +345,14 @@ if __name__ == '__main__':
         if not result_df.empty:
             print('\n=== 분석 완료 ===')
             print('구역 1 데이터가 성공적으로 분석 및 필터링되었습니다.')
-            print(f'최종 데이터셋에는 {len(result_df)}개의 레코드가 포함되어 있습니다.')
+            print(f'최종 데이터셋에는 {len(result_df)}개의 데이터가 포함되어 있습니다.')
         else:
             print('\n=== 분석 완료 (데이터 없음) ===')
             print('구역 1 데이터가 없어 빈 데이터셋을 반환합니다.')
             
     except KeyboardInterrupt:
-        print('\n\n❌ 사용자에 의해 중단되었습니다.')
+        print('\n\n사용자에 의해 중단되었습니다.')
         sys.exit(1)
     except Exception as e:
-        print(f'\n❌ 프로그램 실행 중 오류 발생: {e}')
+        print(f'\n프로그램 실행 중 오류 발생: {e}')
         sys.exit(1)
