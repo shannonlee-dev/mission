@@ -23,10 +23,11 @@ def load_data_files():
             print(f'=====\n{file}\n=====')
         sys.exit(1)
     
+
     dataframes = {}
     
     try:
-        # area_map.csv 로드 (좌표 정보 및 공사장 데이터 포함)
+        # area_map.csv 로드
         print('area_map.csv 로딩 중...')
         area_map_df = pd.read_csv('data/area_map.csv')
         
@@ -44,14 +45,16 @@ def load_data_files():
         # 중요한 컬럼에서 누락된 값 확인
         null_counts_map = area_map_df[required_columns_map].isnull().sum()
         if null_counts_map.any():
-            print(f' 경고: area_map.csv에 결측치 있습니다:')
+            print(f'경고: area_map.csv에 결측치 있습니다:')
             for col, count in null_counts_map.items():
                 if count > 0:
                     print(f'{col}: {count}개 누락')
         
+        print(area_map_df,'\n')
+
         dataframes['area_map'] = area_map_df
         
-        # area_struct.csv 로드 (구조물 위치 및 타입 데이터 포함)
+        # area_struct.csv 로드 
         print('area_struct.csv 로딩 중...')
         area_struct_df = pd.read_csv('data/area_struct.csv')
         
@@ -59,7 +62,7 @@ def load_data_files():
         required_columns_struct = ['x', 'y', 'category', 'area']
         missing_cols = [col for col in required_columns_struct if col not in area_struct_df.columns]
         if missing_cols:
-            raise ValueError(f'area_struct.csv에서 필수 컬럼이 누락되었습니다: {missing_cols}')
+            raise ValueError(f'area_struct.csv의 필수 columns이 누락되었습니다. 누락된 columns: {missing_cols}')
             
         # 빈 데이터 확인
         if area_struct_df.empty:
@@ -68,26 +71,27 @@ def load_data_files():
         # 중요한 컬럼에서 누락된 값 확인
         null_counts_struct = area_struct_df[required_columns_struct].isnull().sum()
         if null_counts_struct.any():
-            print(f'⚠️ 경고: area_struct.csv에 누락된 값이 있습니다:')
+            print(f'경고: area_struct.csv에 누락된 값이 있습니다:')
             for col, count in null_counts_struct.items():
                 if count > 0:
-                    print(f'   - {col}: {count}개 누락')
+                    print(f'{col}: {count}개 누락')
         
+        print(area_struct_df,'\n')
+
         dataframes['area_struct'] = area_struct_df
         
-        # area_category.csv 로드 (카테고리 ID에서 구조물 이름으로의 매핑 포함)
+        # area_category.csv 로드
         print('area_category.csv 로딩 중...')
         area_category_df = pd.read_csv('data/area_category.csv')
         
-        # area_category.csv 구조 검증
         required_columns_category = ['category', 'struct']
-        # 잠재적인 컬럼명 변형 처리
+   
         actual_columns = [col.strip() for col in area_category_df.columns]
         area_category_df.columns = actual_columns
         
         missing_cols = [col for col in required_columns_category if col not in actual_columns]
         if missing_cols:
-            raise ValueError(f'area_category.csv에서 필수 컬럼이 누락되었습니다: {missing_cols}')
+            raise ValueError(f'area_category.csv의 필수 columns이 누락되었습니다. 누락된 columns: {missing_cols}')
             
         # 빈 데이터 확인
         if area_category_df.empty:
@@ -96,13 +100,27 @@ def load_data_files():
         # 중요한 컬럼에서 누락된 값 확인
         null_counts_category = area_category_df[required_columns_category].isnull().sum()
         if null_counts_category.any():
-            print(f'⚠️ 경고: area_category.csv에 누락된 값이 있습니다:')
+            print(f'경고: area_category.csv에 누락된 값이 있습니다:')
             for col, count in null_counts_category.items():
                 if count > 0:
-                    print(f'   - {col}: {count}개 누락')
+                    print(f'{col}: {count}개 누락')
                     
+        print(area_category_df,'\n')
+
         dataframes['area_category'] = area_category_df
-        
+        # dataframes 통합 완료.
+
+
+
+
+
+
+
+
+
+
+
+
         # area_map과 area_struct 간의 좌표 일관성 확인
         map_coords = set(zip(area_map_df['x'], area_map_df['y']))
         struct_coords = set(zip(area_struct_df['x'], area_struct_df['y']))
@@ -275,9 +293,7 @@ def filter_area_1_data(complete_df):
 
 def analyze_data():
     """Stage 1 요구사항에 따라 데이터 분석을 수행하는 메인 함수입니다."""
-    try:
-        print('=== 데이터 분석 시작 ===')
-        
+    try:        
         print('데이터 파일을 로딩하는 중...')
         area_map_df, area_struct_df, area_category_df = load_data_files()
         
