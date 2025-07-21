@@ -1,5 +1,4 @@
-print(float('in'))
+a= float(input("fsdafsdaf:"))
 
 
-print(float('inf'))
-print(float('nan'))
+FHGFGGHGFHGHDFHSDFHDF
