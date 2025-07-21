@@ -240,26 +240,25 @@ def filter_area_1_data(complete_df):
             raise ValueError('완성된 데이터에 area 컬럼이 없습니다.')
             
         # 구역 1 데이터가 존재하는지 확인
-        area_1_count = len(complete_df[complete_df['area'] == 1])
-        if area_1_count == 0:
-            print('⚠️ 경고: 구역 1 데이터가 없습니다.')
-            return pd.DataFrame()  # 빈 DataFrame 반환
+        if len(complete_df[complete_df['area'] == 1]) == 0:
+            print('경고: 구역 1 데이터가 없습니다.')
+            return pd.DataFrame()  
             
         # 구역 1 데이터만 필터링
         area_1_df = complete_df[complete_df['area'] == 1].copy()
         
-        # 구역별로 정렬 (모두 구역 1이지만, 그 다음 x, y 좌표순으로)
-        area_1_df = area_1_df.sort_values(['area', 'x', 'y'])
+        # 구역별로 정렬 (x, y 좌표순으로)
+        area_1_df = area_1_df.sort_values(['x', 'y'])
         
         # 깔끔한 출력을 위해 인덱스 재설정
         area_1_df = area_1_df.reset_index(drop=True)
         
-        print(f'✅ 구역 1 데이터 필터링 완료: {len(area_1_df)}개 데이터')
+        print(f'구역 1 데이터 필터링 완료: {len(area_1_df)}개 데이터')
         
         return area_1_df
         
     except Exception as e:
-        print(f'❌ 구역 1 데이터 필터링 중 오류 발생: {e}')
+        print(f'구역 1 데이터 필터링 중 오류 발생: {e}')
         raise
 
 
@@ -284,10 +283,8 @@ def analyze_data():
         print('\n구역 1 데이터로 필터링하는 중...')
         area_1_result = filter_area_1_data(complete_df)
         
-        # 구역 1 데이터가 있는지 확인
         if area_1_result.empty:
-            print('구역 1 데이터가 없어 분석을 중단합니다.')
-            return area_1_result
+            print('구역 1 데이터가 없습니다.')
         
         # 분석 결과 표시
         print('\n=== 구역 1 분석 결과 ===')
@@ -303,13 +300,9 @@ def analyze_data():
             print(f'공사장: {construction_count}개')
             print(f'비공사장: {len(area_1_result) - construction_count}개')
         
-        print('\n구역 1 데이터의 첫 10개 레코드:')
-        print(area_1_result.head(10))
-        
-        if 'x' in area_1_result.columns and 'y' in area_1_result.columns:
-            print('\n구역 1 내 좌표 범위:')
-            print(f'X 좌표: {area_1_result["x"].min()}부터 {area_1_result["x"].max()}까지')
-            print(f'Y 좌표: {area_1_result["y"].min()}부터 {area_1_result["y"].max()}까지')
+        print('\n구역 1 데이터:')
+        print(area_1_result)
+    
         
         # 구역 1 내 특정 구조물 확인
         if 'struct' in area_1_result.columns:
