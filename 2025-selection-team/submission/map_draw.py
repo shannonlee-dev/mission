@@ -156,7 +156,7 @@ def add_legend(ax):
                          alpha=0.8, label='Construction Site')
     ]
     
-    ax.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(1.0, 1.0))
+    ax.legend(handles=legend_elements, loc='upper left')
 
 
 def save_map(fig, filename='map.png'):

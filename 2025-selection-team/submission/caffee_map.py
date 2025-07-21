@@ -1,18 +1,10 @@
-"""
-Stage 1: 데이터 수집 및 분석
-
-이 모듈은 area_map.csv, area_struct.csv, area_category.csv 파일의 내용을 로드하고 분석합니다.
-area_category.csv를 기반으로 구조물 ID를 이름으로 변환하고, 데이터셋을 병합하며,
-구역 1 데이터만을 필터링합니다.
-"""
-
 import pandas as pd
 import os
 import sys
 
 
 def load_data_files():
-    """오류 처리와 함께 세 개의 CSV 파일을 로드하고 DataFrame으로 반환합니다."""
+
     required_files = {
         'area_map': 'data/area_map.csv',
         'area_struct': 'data/area_struct.csv', 
@@ -26,9 +18,9 @@ def load_data_files():
             missing_files.append(path)
     
     if missing_files:
-        print(f'❌ 오류: 다음 필수 파일들이 존재하지 않습니다:')
+        print(f'오류: 다음 파일들이 존재하지 않습니다:')
         for file in missing_files:
-            print(f'   - {file}')
+            print(f'=====\n{file}\n=====')
         sys.exit(1)
     
     dataframes = {}
@@ -38,23 +30,24 @@ def load_data_files():
         print('area_map.csv 로딩 중...')
         area_map_df = pd.read_csv('data/area_map.csv')
         
-        # area_map.csv 구조 검증
-        required_columns_map = ['x', 'y', 'ConstructionSite']
-        missing_cols = [col for col in required_columns_map if col not in area_map_df.columns]
-        if missing_cols:
-            raise ValueError(f'area_map.csv에서 필수 컬럼이 누락되었습니다: {missing_cols}')
-        
         # 빈 데이터 확인
         if area_map_df.empty:
             raise ValueError('area_map.csv가 비어있습니다.')
-            
+
+        # area_map.csv 구조 검증
+        required_columns_map = ['x', 'y', 'ConstructionSite']
+ 
+        missing_cols = [col for col in required_columns_map if col not in area_map_df.columns]
+        if missing_cols:
+            raise ValueError(f'area_map.csv의 필수 columns이 누락되었습니다. 누락된 columns: {missing_cols}')
+        
         # 중요한 컬럼에서 누락된 값 확인
         null_counts_map = area_map_df[required_columns_map].isnull().sum()
         if null_counts_map.any():
-            print(f'⚠️ 경고: area_map.csv에 누락된 값이 있습니다:')
+            print(f' 경고: area_map.csv에 결측치 있습니다:')
             for col, count in null_counts_map.items():
                 if count > 0:
-                    print(f'   - {col}: {count}개 누락')
+                    print(f'{col}: {count}개 누락')
         
         dataframes['area_map'] = area_map_df
         
