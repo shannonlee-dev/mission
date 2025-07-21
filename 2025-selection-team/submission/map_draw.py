@@ -109,14 +109,14 @@ def draw_structures(ax, complete_df):
             # 구조물 타입에 따른 시각화
             if struct_type == 'Apartment':
                 # 갈색 원으로 아파트 표시
-                circle = patches.Circle((x, y), 0.4, facecolor='brown',
+                circle = patches.Circle((x, y), 0.4, facecolor='saddlebrown',
                                       edgecolor='darkred', alpha=1.0, linewidth=1)
                 ax.add_patch(circle)
                 structure_counts['Apartment'] += 1
 
             elif struct_type == 'Building':
                 # 갈색 원으로 빌딩 표시
-                circle = patches.Circle((x, y), 0.4, facecolor='brown',
+                circle = patches.Circle((x, y), 0.4, facecolor='saddlebrown',
                                       edgecolor='darkred', alpha=1.0, linewidth=1)
                 ax.add_patch(circle)
                 structure_counts['Building'] += 1
@@ -145,7 +145,7 @@ def draw_structures(ax, complete_df):
 def add_legend(ax):
     """범례를 추가합니다."""
     legend_elements = [
-        patches.Circle((0, 0), 0.3, facecolor='brown', edgecolor='darkred', 
+        patches.Circle((0, 0), 0.3, facecolor='saddlebrown', edgecolor='darkred', 
                       alpha=0.8, label='Apartment/Building'),
         patches.Rectangle((0, 0), 0.6, 0.6, facecolor='green', edgecolor='darkgreen', 
                          alpha=0.9, label='Bandalkom Coffee'),
