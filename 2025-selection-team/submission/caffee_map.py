@@ -117,7 +117,7 @@ def load_data_files():
             if missing_in_map:
                 print(f'경고: area_map.csv에서 누락된 좌표 {len(missing_in_map)}개')
         
-        print('데이터 로딩 완료...')
+        print('데이터 로딩 완료\n=============')
 
         return area_map_df, area_struct_df, area_category_df
         
@@ -220,11 +220,10 @@ def merge_all_datasets(area_map_df, area_struct_with_names_df):
         if complete_df.empty:
             raise ValueError('병합 결과가 비어있습니다.')
             
-        print(f'데이터 병합 완료: {len(complete_df)}개의 행 생성')
         
-   
         complete_df = complete_df.sort_values(by='area', ascending=True).reset_index(drop=True)
-        print('\narea 기준 오름차순 정렬 완료')
+        print('area 기준 오름차순 정렬')
+        print(f'데이터 병합 완료: 총 개수 {len(complete_df)}개의 통합 데이터 생성\n=============')
         return complete_df
         
     except Exception as e:
@@ -233,100 +232,74 @@ def merge_all_datasets(area_map_df, area_struct_with_names_df):
 
 
 def filter_area_1_data(complete_df):
-    """오류 처리와 함께 구역 1 데이터만 필터링하고 구역별로 정렬하여 반환합니다."""
+    """오류 처리와 함께 area 1 데이터만 필터링하고 area별로 정렬하여 반환합니다."""
     try:
         # area 컬럼이 존재하고 유효한 데이터를 가지고 있는지 확인
         if 'area' not in complete_df.columns:
             raise ValueError('완성된 데이터에 area 컬럼이 없습니다.')
             
-        # 구역 1 데이터가 존재하는지 확인
+        # area 1 데이터가 존재하는지 확인
         if len(complete_df[complete_df['area'] == 1]) == 0:
-            print('경고: 구역 1 데이터가 없습니다.')
+            print('경고: area 1 데이터가 없습니다.')
             return pd.DataFrame()  
             
-        # 구역 1 데이터만 필터링
+        # area 1 데이터만 필터링
         area_1_df = complete_df[complete_df['area'] == 1].copy()
         
-        # 구역별로 정렬 (x, y 좌표순으로)
+        # area별로 정렬 (x, y 좌표순으로)
         area_1_df = area_1_df.sort_values(['x', 'y'])
         
         # 깔끔한 출력을 위해 인덱스 재설정
         area_1_df = area_1_df.reset_index(drop=True)
         
-        print(f'구역 1 데이터 필터링 완료: {len(area_1_df)}개 데이터')
+        print(f'area 1 데이터 필터링 완료')
         
         return area_1_df
         
     except Exception as e:
-        print(f'구역 1 데이터 필터링 중 오류 발생: {e}')
+        print(f'area 1 데이터 필터링 중 오류 발생: {e}')
         raise
 
 
 def analyze_data():
     """Stage 메인 함수입니다."""
     try:        
-        print('데이터 파일을 로딩하는 중...')
+        print('데이터 파일 로딩 시도...')
         area_map_df, area_struct_df, area_category_df = load_data_files()
         
-        print('구조물 ID를 이름으로 변환하는 중...')
+        print('구조물 ID 이름으로 변환 시도...')
         area_struct_with_names = convert_struct_ids_to_names(area_struct_df, area_category_df)
+        print('구조물 ID 이름 변환 완료 \n=============')
         
-        print('데이터셋을 병합하는 중...')
+        print('데이터셋 병합 시도...')
         complete_df = merge_all_datasets(area_map_df, area_struct_with_names)
         
         # 전체 데이터 개요 표시
-        print('\n=== 전체 데이터 개요 ===')
-        print(f'전체 구역의 총 데이터 수: {len(complete_df)}')
+        print('\n전체 데이터: area 기준 정렬')
         print(complete_df)
 
-        
-        print('\n구역 1 데이터로 필터링하는 중...')
         area_1_result = filter_area_1_data(complete_df)
         
         if area_1_result.empty:
-            print('구역 1 데이터가 없습니다.')
+            print('area 1 데이터가 없습니다.')
         
         # 분석 결과 표시
-        print('\n=== 구역 1 분석 결과 ===')
-        print(f'구역 1의 총 데이터 수: {len(area_1_result)}')
-        
-        if 'struct' in area_1_result.columns:
-            print('\n구역 1 내 구조물 분포:')
-            print(area_1_result['struct'].value_counts())
+        print('\narea 1 분석 결과')
+        print(f'area 1 총 데이터 수: {len(area_1_result)}')
         
         if 'ConstructionSite' in area_1_result.columns:
             construction_count = area_1_result['ConstructionSite'].sum()
-            print('\n구역 1 내 공사장 분포:')
+            print('\narea 1 공사장 분포:')
             print(f'공사장: {construction_count}개')
             print(f'비공사장: {len(area_1_result) - construction_count}개')
         
-        print('\n구역 1 데이터:')
+        print('\narea 1 데이터:')
         print(area_1_result)
-    
-        
-        # 구역 1 내 특정 구조물 확인
-        if 'struct' in area_1_result.columns:
-            print('\n구역 1 내 특수 구조물:')
-            my_home = area_1_result[area_1_result['struct'] == 'MyHome']
-            bandalgom_coffee = area_1_result[area_1_result['struct'] == 'BandalgomCoffee']
-            
-            if not my_home.empty:
-                print(f'내 집 위치: x={my_home.iloc[0]["x"]}, y={my_home.iloc[0]["y"]}')
-            else:
-                print('내 집이 구역 1에서 발견되지 않음 (예상됨 - 커피 분석을 위해 구역 1에 집중)')
-            
-            if not bandalgom_coffee.empty:
-                print(f'반달곰커피 위치: {len(bandalgom_coffee)}개 발견')
-                for _, cafe in bandalgom_coffee.iterrows():
-                    print(f'  - 카페 위치: x={cafe["x"]}, y={cafe["y"]}')
-            else:
-                print('반달곰커피가 구역 1에서 발견되지 않음')
         
         return area_1_result
         
     except Exception as e:
         print(f'데이터 분석 중 치명적 오류 발생: {e}')
-        print('분석을 중단합니다.')
         sys.exit(1)
 
 
@@ -337,15 +310,22 @@ if __name__ == '__main__':
         
         if not result_df.empty:
             print('\n=== 분석 완료 ===')
-            print('구역 1 데이터가 성공적으로 분석 및 필터링되었습니다.')
-            print(f'최종 데이터셋에는 {len(result_df)}개의 데이터가 포함되어 있습니다.')
+            print('area 1 데이터 분석에 성공하였습니다.')
+
+            # 구조물 종류별 요약 통계 리포트
+            if 'struct' in result_df.columns:
+                print('\n=== 구조물 종류별 요약 통계 리포트 ===')
+                struct_counts = result_df['struct'].value_counts().sort_index()
+                total = struct_counts.sum()
+                for struct_name, count in struct_counts.items():
+                    percent = (count / total) * 100 if total > 0 else 0
+                    print(f'  - {struct_name}: {count}개 ({percent:.1f}%)')
+            else:
+                print('구조물 통계 정보를 찾을 수 없습니다.')
         else:
             print('\n=== 분석 완료 (데이터 없음) ===')
-            print('구역 1 데이터가 없어 빈 데이터셋을 반환합니다.')
-            
-    except KeyboardInterrupt:
-        print('\n\n사용자에 의해 중단되었습니다.')
-        sys.exit(1)
+            print('area 1 데이터가 존재하지 않습니다.')
+
     except Exception as e:
         print(f'\n프로그램 실행 중 오류 발생: {e}')
         sys.exit(1)
