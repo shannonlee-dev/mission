@@ -57,7 +57,7 @@ python --version
 codyssey-team/
 ├── data/                   # 데이터 파일들
 ├── test/                   # 테스트 파일들
-├── mas_map.py             # Stage 1: 데이터 분석
+├── caffee_map.py              # Stage 1: 데이터 분석
 ├── map_draw.py            # Stage 2: 맵 시각화
 ├── map_direct_save.py     # Stage 3: 경로 찾기
 ├── requirements.txt       # 패키지 의존성
@@ -67,7 +67,7 @@ codyssey-team/
 ### 실행 방법
 ```bash
 # 가상환경이 활성화된 상태에서:
-python mas_map.py          # 데이터 분석
+python caffee_map.py           # 데이터 분석
 python map_draw.py         # 맵 시각화  
 python map_direct_save.py  # 경로 찾기
 ```
@@ -78,7 +78,7 @@ python map_direct_save.py  # 경로 찾기
 python -m pytest test/
 
 # 특정 테스트 실행
-python -m pytest test/test_mas_map.py
+python -m pytest test/test_caffee_map.py 
 ```
 
 ### 출력 파일

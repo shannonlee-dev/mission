@@ -73,7 +73,7 @@ else
     echo "     source .venv/bin/activate"
 fi
 echo "  2. 프로그램 실행:"
-echo "     python mas_map.py"
+echo "     python caffee_map.py "
 echo "     python map_draw.py"
 echo "     python map_direct_save.py"
 echo "  3. 테스트 실행:"
