@@ -30,8 +30,10 @@ def setup_map_figure(complete_df):
         spine.set_edgecolor('white') # 테두리 색상 설정
         spine.set_linewidth(2) 
 
-    ax.set_xlim(x_min-1, x_max+1)
-    ax.set_ylim(y_max+1, y_min-1)
+    ax.set_xlim(x_min - 1, x_max + 1)
+    ax.set_ylim(y_min - 1, y_max + 1)
+
+    ax.invert_yaxis()
 
             # 격자선 그리기 (건물이 격자선 위에 위치하도록 중심 좌표를 정수로 사용)
     for x in range(x_min, x_max + 1):

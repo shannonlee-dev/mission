@@ -132,6 +132,10 @@ def visualize_path_on_map(complete_df, path, target_cafe,filename='map_final.png
     """경로를 지도에 빨간색 선으로 표시하고 저장합니다."""
     try:
         print('최종 지도 시각화 시작...')
+
+        if not path or len(path) < 2:
+            print('경로가 존재하지 않으므로 시각화를 건너뜁니다.')
+            return
         
         # map_draw.py의 setup_map_figure 함수 사용
         _, ax, _ = setup_map_figure(complete_df)
@@ -166,7 +170,7 @@ def visualize_path_on_map(complete_df, path, target_cafe,filename='map_final.png
         ax.legend(loc='upper left', fontsize=10)
         
         # 제목 수정 (경로 정보 포함)
-        ax.set_title(f'Shortest Path from MyHome to BandalgomCoffee(A*)\nPath Length: {len(path) if path else 0} steps', 
+        ax.set_title(f'Shortest Path from MyHome to BandalgomCoffee\nPath Length: {len(path) if path else 0} steps', 
                     fontsize=16, fontweight='bold')
         
         # 이미지 저장

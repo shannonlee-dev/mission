@@ -4,7 +4,6 @@ import sys
 
 
 def load_data_files():
-
     required_files = {
         'area_map': 'data/area_map.csv',
         'area_struct': 'data/area_struct.csv', 
@@ -214,7 +213,7 @@ def merge_all_datasets(area_map_df, area_struct_with_names_df):
             area_map_df,
             area_struct_with_names_df,
             on=['x', 'y'],
-            how='inner'
+            how='outer'
         )      
         # 병합 결과 검증
         if complete_df.empty:
@@ -340,5 +339,4 @@ if __name__ == '__main__':
     
     except Exception as e:
         print(f'\n프로그램 실행 중 오류 발생: {e}')
-        sys.exit(1)
-    
+        sys.exit(1)    
