@@ -214,7 +214,7 @@ def merge_all_datasets(area_map_df, area_struct_with_names_df):
             area_map_df,
             area_struct_with_names_df,
             on=['x', 'y'],
-            how='outer'
+            how='inner'
         )      
         # 병합 결과 검증
         if complete_df.empty:

@@ -115,7 +115,7 @@ def draw_structures(ax, complete_df):
 def add_legend(ax):
     """범례"""
     legend_elements = [
-        patches.Circle((0, 0), 0.3, facecolor='saddlebrown', edgecolor='darkred', 
+        patches.Circle((0, 0), 0.3, facecolor='saddlebrown', edgecolor='saddlebrown', 
                       alpha=0.8, label='Apartment/Building'),
         patches.Rectangle((0, 0), 0.6, 0.6, facecolor='green', edgecolor='darkgreen', 
                          alpha=0.9, label='Bandalgom Coffee'),
@@ -147,9 +147,11 @@ def create_map_visualization():
         # 1. 데이터 로딩
         print('Stage 1에서 생성한 지도 통합 데이터 로드 중 ...','\n')
         path = 'data/complete_map_data.csv'
-        complete_df = pd.read_csv(path)
+
         if not os.path.exists(path):
             raise FileNotFoundError(f'오류: 지도 통합 데이터 "{path}"을(를) 찾을 수 없습니다. Stage 1을 먼저 실행하여 파일을 생성해 주세요.')
+
+        complete_df = pd.read_csv(path)
 
         if complete_df.empty:
             raise ValueError(f'오류: 통합된 지도 데이터 파일 "{path}"이(가) 비어있습니다.')

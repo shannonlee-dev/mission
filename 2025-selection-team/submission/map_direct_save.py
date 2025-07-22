@@ -189,9 +189,10 @@ def main():
 # 1. 데이터 로딩
     print('Stage 1에서 생성한 지도 통합 데이터 로드 중 ...','\n')
     path = 'data/complete_map_data.csv'
-    complete_df = pd.read_csv(path)
     if not os.path.exists(path):
         raise FileNotFoundError(f'오류: 지도 통합 데이터 "{path}"을(를) 찾을 수 없습니다. Stage 1을 먼저 실행하여 파일을 생성해 주세요.')
+
+    complete_df = pd.read_csv(path)
 
     if complete_df.empty:
         raise ValueError(f'오류: 통합된 지도 데이터 파일 "{path}"이(가) 비어있습니다.')
