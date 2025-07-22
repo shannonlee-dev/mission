@@ -1,11 +1,10 @@
 """
 Stage 3: 최단 경로 찾기
 
-이 모듈은 분석된 지도 데이터를 사용하여 집(MyHome)에서 반달곰 커피(BandalgomCoffee) 위치까지의
-최단 경로를 찾습니다. BFS 알고리즘을 사용하여 경로를 탐색하며, 공사장 위치는 지나갈 수 없습니다.
 """
 
 import pandas as pd
+import os
 import matplotlib
 matplotlib.use('Agg')  # 반드시 plt, patches 등 import 전에 실행
 import matplotlib.pyplot as plt
@@ -14,34 +13,6 @@ from collections import deque
 import sys
 # map_draw.py의 지도 그리기 함수들을 import
 from map_draw import setup_map_figure, draw_structures, add_legend
-
-
-def load_map_data():
-    """지도 데이터를 로드하고 전처리합니다."""
-    try:
-        print('지도 데이터를 로드하는 중...')
-        
-        area_map_df = pd.read_csv('data/area_map.csv')
-        area_struct_df = pd.read_csv('data/area_struct.csv')
-        area_category_df = pd.read_csv('data/area_category.csv')
-        
-        # 카테고리 데이터 정리
-        area_category_df.columns = area_category_df.columns.str.strip()
-        area_category_df['struct'] = area_category_df['struct'].str.strip()
-        
-        # 구조물 이름 매핑
-        merged_df = pd.merge(area_struct_df, area_category_df, on='category', how='left')
-        merged_df['struct'] = merged_df['struct'].fillna('Empty')
-        
-        # 전체 데이터 병합
-        complete_df = pd.merge(area_map_df, merged_df, on=['x', 'y'], how='inner')
-        
-        print(f'✅ 지도 데이터 로드 완료: {len(complete_df)}개 위치')
-        return complete_df
-        
-    except Exception as e:
-        print(f'❌ 데이터 로드 중 오류 발생: {e}')
-        sys.exit(1)
 
 
 def find_key_locations(complete_df):
@@ -84,10 +55,7 @@ def create_grid_map(complete_df):
     # 모든 유효한 좌표 집합 생성
     valid_positions = set(zip(complete_df['x'], complete_df['y']))
     
-    print(f'📍 격자 범위: X({x_min}~{x_max}), Y({y_min}~{y_max})')
-    print(f'📍 유효한 위치: {len(valid_positions)}개')
-    
-    return valid_positions, (x_min, x_max, y_min, y_max)
+    return valid_positions
 
 
 def bfs_shortest_path(start_pos, target_positions, valid_positions, construction_sites):
@@ -148,13 +116,13 @@ def save_path_to_csv(path, target_cafe, filename='home_to_cafe.csv'):
         path_df = pd.DataFrame(path_data)
         path_df.to_csv(filename, index=False, encoding='utf-8-sig')
         
-        print(f'💾 경로가 {filename} 파일로 저장되었습니다.')
-        print(f'📊 총 {len(path)}단계, 목표 카페: {target_cafe}')
+        print(f'경로가 {filename} 파일로 저장되었습니다.')
+        print(f'총 {len(path)}단계, 목표 카페: {target_cafe}')
         
         return path_df
         
     except Exception as e:
-        print(f'❌ CSV 저장 중 오류 발생: {e}')
+        print(f'CSV 저장 중 오류 발생: {e}')
         sys.exit(1)
 
 
@@ -212,14 +180,7 @@ def visualize_path_on_map(complete_df, path, target_cafe, construction_sites, fi
         plt.close()
         
         print(f'🎯 최종 지도가 {filename} 파일로 저장되었습니다.')
-        
-        # 구조물 개수 출력
-        print('구조물 분포:', end=' ')
-        for struct_type, count in structure_counts.items():
-            if count > 0:
-                print(f'{struct_type}: {count}개', end=', ')
-        print()
-        
+                
     except Exception as e:
         print(f'❌ 지도 시각화 중 오류 발생: {e}')
         sys.exit(1)
@@ -227,39 +188,42 @@ def visualize_path_on_map(complete_df, path, target_cafe, construction_sites, fi
 
 def main():
     """메인 실행 함수"""
-    print('=' * 60)
-    print('🚀 Stage 3: 최단 경로 찾기 시작')
-    print('=' * 60)
+
+    print('=== Stage 3: 최단 경로 찾기 시작 ===')
     
-    # 1. 데이터 로드
-    complete_df = load_map_data()
+# 1. 데이터 로딩
+    print('Stage 1에서 생성한 지도 통합 데이터 로드 중 ...','\n')
+    path = 'data/complete_map_data.csv'
+    complete_df = pd.read_csv(path)
+    if not os.path.exists(path):
+        raise FileNotFoundError(f'오류: 지도 통합 데이터 "{path}"을(를) 찾을 수 없습니다. Stage 1을 먼저 실행하여 파일을 생성해 주세요.')
+
+    if complete_df.empty:
+        raise ValueError(f'오류: 통합된 지도 데이터 파일 "{path}"이(가) 비어있습니다.')
+        
+    print(f'전달된 지도 통합 데이터: {len(complete_df)}개')  
     
     # 2. 핵심 위치 찾기
-    home_pos, cafe_positions, construction_sites = find_key_locations(complete_df)
+    home_loc, cafes_loc, blocked_loc = find_key_locations(complete_df)
     
     # 3. 격자 지도 생성
-    valid_positions, grid_bounds = create_grid_map(complete_df)
+    valid_positions = create_grid_map(complete_df)
     
     # 4. 최단 경로 탐색 (BFS 알고리즘)
-    path, target_cafe = bfs_shortest_path(home_pos, cafe_positions, valid_positions, construction_sites)
+    path, target_cafe = bfs_shortest_path(home_loc, cafes_loc, valid_positions, blocked_loc)
     
     if path is None:
-        print('❌ 집에서 반달곰 커피까지의 경로를 찾을 수 없습니다.')
+        print('집에서 반달곰 커피까지의 경로를 찾을 수 없습니다.')
         sys.exit(1)
     
     # 5. 경로를 CSV 파일로 저장
-    path_df = save_path_to_csv(path, target_cafe)
+    save_path_to_csv(path, target_cafe)
     
     # 6. 경로가 표시된 지도 시각화 및 저장
-    visualize_path_on_map(complete_df, path, target_cafe, construction_sites)
+    visualize_path_on_map(complete_df, path, target_cafe, blocked_loc)
     
     print('=' * 60)
-    print('✅ Stage 3 완료!')
-    print(f'📁 생성된 파일들:')
-    print(f'   - home_to_cafe.csv: 최단 경로 데이터')
-    print(f'   - map_final.png: 경로가 표시된 최종 지도')
-    print('=' * 60)
-
+    print('Stage 3 완료!')
 
 if __name__ == '__main__':
     main()

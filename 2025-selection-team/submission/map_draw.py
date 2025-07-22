@@ -19,23 +19,27 @@ def setup_map_figure(complete_df):
     y_min, y_max = complete_df['y'].min(), complete_df['y'].max()
 
     print(f'좌표 범위: X({x_min}~{x_max}), Y({y_min}~{y_max})')
-
+    
     # figure 크기 설정 (좌표 비율에 맞춤)
     fig_width = (x_max - x_min + 1) * 0.8
     fig_height = (y_max - y_min + 1) * 0.8
-
+    
     fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
-    ax.set_xlim(x_min, x_max)
-    ax.set_ylim(y_max, y_min)
+    for spine in ax.spines.values():
+        spine.set_edgecolor('white') # 테두리 색상 설정
+        spine.set_linewidth(2) 
 
-    # 격자선 그리기 (건물이 격자선 위에 위치하도록 중심 좌표를 정수로 사용)
+    ax.set_xlim(x_min-1, x_max+1)
+    ax.set_ylim(y_max+1, y_min-1)
+
+            # 격자선 그리기 (건물이 격자선 위에 위치하도록 중심 좌표를 정수로 사용)
     for x in range(x_min, x_max + 1):
-        ax.axvline(x=x, color='lightgray', linestyle='-', alpha=0.8)
+        ax.axvline(x=x, color='#212529', linestyle='-', alpha=0.8, zorder=0)
     for y in range(y_min, y_max + 1):
-        ax.axhline(y=y, color='lightgray', linestyle='-', alpha=0.8)
+        ax.axhline(y=y, color='#212529', linestyle='-', alpha=0.8, zorder=0)
 
-    # 축 설정 (번호가 격자선 위에 오도록)
+    # 축 설정 
     ax.set_xlabel('X', fontsize=12)
     ax.set_ylabel('Y', fontsize=12)
     ax.set_title('Map Visualization', fontsize=16, fontweight='bold')
@@ -66,8 +70,8 @@ def draw_structures(ax, complete_df):
         if is_construction:
             # 회색 사각형으로 공사장 표시
             square = patches.Rectangle((x - 0.5, y - 0.5), 1.0, 1.0,
-                                     facecolor='gray', edgecolor='black',
-                                     alpha=0.8, linewidth=3)
+                                     facecolor='gray', edgecolor='gray',
+                                     alpha=0.8, linewidth=0)
             ax.add_patch(square)
             structure_counts['ConstructionSite'] += 1
 
@@ -147,7 +151,6 @@ def create_map_visualization():
         if not os.path.exists(path):
             raise FileNotFoundError(f'오류: 지도 통합 데이터 "{path}"을(를) 찾을 수 없습니다. Stage 1을 먼저 실행하여 파일을 생성해 주세요.')
 
-        
         if complete_df.empty:
             raise ValueError(f'오류: 통합된 지도 데이터 파일 "{path}"이(가) 비어있습니다.')
         
@@ -170,7 +173,7 @@ def create_map_visualization():
         save_map(fig, 'map.png')
     
         plt.close(fig)  
-        
+
     except Exception as e:
         print(f'지도 시각화 중 치명적 오류 발생: {e}')
         sys.exit(1)

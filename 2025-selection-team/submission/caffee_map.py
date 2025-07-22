@@ -264,6 +264,7 @@ def filter_area_1_data(complete_df):
 def analyze_data():
     """Stage 메인 함수입니다."""
     try:        
+        print('=== Stage 1: 데이터 분석 시작 ===')
         print('데이터 파일 로딩 시도...')
         area_map_df, area_struct_df, area_category_df = load_data_files()
         
