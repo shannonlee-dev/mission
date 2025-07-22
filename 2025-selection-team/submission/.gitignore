@@ -12,8 +12,10 @@ env/
 
 # 출력 파일들
 home_to_cafe.csv
+home_to_cafe2.csv
 map.png
 map_final.png
+map_final2.png
 complete_df.csv
 
 # IDE 관련
