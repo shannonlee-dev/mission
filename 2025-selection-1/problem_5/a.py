@@ -1,4 +1,5 @@
-a= float(input("fsdafsdaf:"))
+print(float('in'))
 
 
-FHGFGGHGFHGHDFHSDFHDF
+print(float('inf'))
+print(float('nan'))
