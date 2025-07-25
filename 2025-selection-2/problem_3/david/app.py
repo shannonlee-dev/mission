@@ -56,8 +56,4 @@ def index():
     )
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-    app.run("0.0.0.0", 8080, debug=True)
-=======
-    app.run("0.0.0.0", 8000, debug=True)
->>>>>>> add-image
+    app.run("0.0.0.0", 1111, debug=True)
