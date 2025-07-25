@@ -1,8 +1,8 @@
 <img src="{{ david_img_url }}" alt="david">
 
-<form method="POST">
+<form method="POST" novalidate>
   <label>이름 또는 문장을 입력하세요:</label>
-  <input type="text" name="input_text" required="">
+  <input type="text" name="input_text" value="{{ input_text|e }}">
   
   <label>언어 선택:</label>
   <select name="lang">
