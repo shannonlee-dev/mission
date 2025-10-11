@@ -58,7 +58,7 @@ def detect_people_in_images(image_files):
         # 사람 탐지
         boxes, weights = hog.detectMultiScale(
             image,
-            winStride=(8, 8), #이거 조절하면 신뢰도 조정 가능. 이동 간 간격(단위:픽셀)
+            winStride=(1, 1), #이거 조절하면 신뢰도 조정 가능. 이동 간 간격(단위:픽셀)
             padding=(8, 8),
             scale=1.05,
             useMeanshiftGrouping=False
