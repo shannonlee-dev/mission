@@ -386,10 +386,30 @@ e43a3960e0a3f5aa737a97e1bb2171f9dd5b8c9a8fb2e5e1d2862aaa6255c4ba
 
 ```zsh
 $ docker ps
-[직접 붙여넣기]
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 
 $ docker logs my-web
-[직접 붙여넣기]
+/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+/docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+/docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+/docker-entrypoint.sh: Configuration complete; ready for start up
+2026/03/30 11:27:58 [notice] 1#1: using the "epoll" event method
+2026/03/30 11:27:58 [notice] 1#1: nginx/1.29.7
+2026/03/30 11:27:58 [notice] 1#1: built by gcc 15.2.0 (Alpine 15.2.0) 
+2026/03/30 11:27:58 [notice] 1#1: OS: Linux 6.17.8-orbstack-00308-g8f9c941121b1
+2026/03/30 11:27:58 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 20480:1048576
+2026/03/30 11:27:58 [notice] 1#1: start worker processes
+2026/03/30 11:27:58 [notice] 1#1: start worker process 30
+2026/03/30 11:27:58 [notice] 1#1: start worker process 31
+2026/03/30 11:27:58 [notice] 1#1: start worker process 32
+2026/03/30 11:27:58 [notice] 1#1: start worker process 33
+2026/03/30 11:27:58 [notice] 1#1: start worker process 34
+2026/03/30 11:27:58 [notice] 1#1: start worker process 35
 
 $ curl http://localhost:8080
 <!DOCTYPE html>
@@ -413,7 +433,7 @@ $ curl http://localhost:8080
 
 ```zsh
 $ docker run -d --name my-web-8080 -p 8080:80 my-web:1.0
-[직접 붙여넣기]
+1a5d55d9e4dd85d2355fe61364feedd7cda6a816747889d5164d3d9dea72223d
 ```
 
 - `-p 8080:80` = 호스트 `8080` 포트를 컨테이너 `80` 포트에 연결
@@ -489,7 +509,7 @@ hi
 
 ```zsh
 $ git config --global user.name "shannonlee-dev"
-$ git config --global user.email "shannon.lee.dev@*****.com"
+$ git config --global user.email "~~~~@~~.com"
 $ git config --global init.defaultBranch main
 $ git config --list
 credential.helper=osxkeychain
@@ -508,15 +528,31 @@ core.precomposeunicode=true
 
 ```zsh
 $ git init
+Initialized empty Git repository in /Users/shh921shh4393/dev/dev-workstation-mission/.git/
 $ git add .
-$ git commit -m "Initialize dev workstation mission"
-$ git remote add origin [직접 입력: GitHub 저장소 URL]
-$ git push -u origin main
+$ git commit -m "개발환경 구축"
+[main (root-commit) 16cdf58] 개발환경 구축
+ 4 files changed, 593 insertions(+)
+ create mode 100644 Dockerfile
+ create mode 100644 README.md
+ create mode 100644 app/index.html
+ create mode 100644 docs/screenshots/docker-web-success.png
+$ git remote add origin https://github.com/shannonlee-dev/Codyssey2026.git
+$ git push -u origin main 
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 6 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (9/9), 7.18 KiB | 7.18 MiB/s, done.
+Total 9 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+To https://github.com/shannonlee-dev/Codyssey2026.git
+ * [new branch]      main -> main
+branch 'main' set up to track 'origin/main'.
 ```
 
 ### 12-3. VSCode / GitHub 연동
 
-![vscode-github-login](docs/screenshots/[직접 첨부: vscode-github-login.png])
+![vscode-github-login](docs/screenshots/vscode-github-login.png)
 
 ---
 
@@ -561,15 +597,3 @@ $ git push -u origin main
 - 원인 가설: 기본 `ubuntu` 이미지에 `zsh` 미설치
 - 확인: `bash`로는 정상 진입 가능
 - 해결: 실습을 `bash` 기준으로 통일
-
----
-
-## 15. 제출 전 확인
-
-- [ ] `docker --version`, `docker info` 실제 출력 추가
-- [ ] `docker images`, `docker ps`, `docker ps -a`, `docker logs`, `docker stats` 실제 출력 보강
-- [ ] `docker build`, `docker run`, `docker logs my-web` 실제 출력 추가
-- [ ] GitHub 저장소 URL 입력
-- [ ] VSCode GitHub 연동 스크린샷 첨부
-- [ ] 이메일 / 토큰 / 민감정보 마스킹 확인
-- [ ] README 코드블록 깨짐 여부 확인
