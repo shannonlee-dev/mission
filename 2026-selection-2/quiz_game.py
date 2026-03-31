@@ -34,6 +34,7 @@ DEFAULT_QUIZ_DATA = [
 
 
 class QuizGame:
+    # 게임 상태를 초기화한다.
     def __init__(self):
         self.state_path = Path("state.json")
         self.quizzes = []
@@ -41,9 +42,11 @@ class QuizGame:
         self.best_total_questions = None
         self.load_state()
 
+    # 기본 퀴즈 목록을 만든다.
     def build_default_quizzes(self):
         return [Quiz.from_dict(item) for item in DEFAULT_QUIZ_DATA]
 
+    # 저장 파일에서 상태를 불러온다.
     def load_state(self):
         if not self.state_path.exists():
             self.quizzes = self.build_default_quizzes()
@@ -98,6 +101,7 @@ class QuizGame:
             self.best_total_questions = None
             self.save_state()
 
+    # 현재 상태를 파일에 저장한다.
     def save_state(self):
         data = {
             "quizzes": [quiz.to_dict() for quiz in self.quizzes],
@@ -111,11 +115,13 @@ class QuizGame:
         except OSError as error:
             print(f"state.json 저장 중 오류가 발생했습니다: {error}")
 
+    # 저장 후 안전하게 종료한다.
     def safe_exit(self):
         print("\n입력이 중단되어 현재 상태를 저장한 뒤 안전하게 종료합니다.")
         self.save_state()
         raise SystemExit(0)
 
+    # 빈 문자열이 아닌 입력만 받는다.
     def read_non_empty_text(self, prompt):
         while True:
             try:
@@ -129,6 +135,7 @@ class QuizGame:
 
             return value
 
+    # 범위 안의 정수만 받는다.
     def read_int_in_range(self, prompt, min_value, max_value):
         while True:
             try:
@@ -152,6 +159,7 @@ class QuizGame:
 
             return value
 
+    # 메인 메뉴를 출력한다.
     def show_menu(self):
         print()
         print("========================================")
@@ -164,6 +172,7 @@ class QuizGame:
         print("5. 종료")
         print("========================================")
 
+    # 퀴즈를 진행하고 점수를 계산한다.
     def play_quiz(self):
         if not self.quizzes:
             print("등록된 퀴즈가 없습니다.")
@@ -201,6 +210,7 @@ class QuizGame:
         self.save_state()
         print("========================================")
 
+    # 새 퀴즈를 추가한다.
     def add_quiz(self):
         print()
         print("새로운 퀴즈를 추가합니다.")
@@ -220,6 +230,7 @@ class QuizGame:
 
         print("퀴즈가 추가되었습니다.")
 
+    # 등록된 퀴즈 목록을 보여준다.
     def list_quizzes(self):
         if not self.quizzes:
             print("등록된 퀴즈가 없습니다.")
@@ -232,6 +243,7 @@ class QuizGame:
             print(f"[{index}] {quiz.question}")
         print("----------------------------------------")
 
+    # 현재 최고 점수를 보여준다.
     def show_best_score(self):
         if self.best_score is None or self.best_total_questions is None:
             print("아직 퀴즈를 풀지 않았습니다.")
