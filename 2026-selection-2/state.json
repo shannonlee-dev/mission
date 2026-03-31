@@ -49,8 +49,18 @@
                 "try"
             ],
             "answer": 2
+        },
+        {
+            "question": "가나다 만 든 사람.",
+            "choices": [
+                "세",
+                "종",
+                "대",
+                "세종"
+            ],
+            "answer": 4
         }
     ],
-    "best_score": null,
-    "best_total_questions": null
+    "best_score": 5,
+    "best_total_questions": 6
 }

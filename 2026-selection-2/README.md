@@ -381,7 +381,20 @@ cat state.json
 
 ![state-file-corrupted-recover](docs/screenshots/state-file-corrupted-recover.png)
 
+프로그램을 다시 실행했을 때 추가한 퀴즈와 최고 점수가 유지되는지도 확인했다.
+
+아래 스크린샷은 재실행 직후 저장된 퀴즈 개수와 최고 점수가 다시 불러와지는 화면이다.
+
+![persistence-check](docs/screenshots/persistence-check.png)
+
 ## 10. 입력 검증 및 예외 처리 방식
+숫자 입력이 필요한 메뉴와 정답 입력에서 다음을 공통 처리했다.
+
+- 입력 앞뒤 공백 제거
+- 빈 입력 차단
+- 숫자 변환 실패 차단
+- 허용 범위 밖 숫자 차단
+- `KeyboardInterrupt`, `EOFError` 발생 시 저장 후 안전 종료
 
 ## 11. Git 작업 기록
 프로젝트 시작 직후 Git 저장소를 초기화하고 첫 커밋을 만들었다.
