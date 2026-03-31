@@ -512,3 +512,5 @@ git branch
 
 ## 15. 저장소 링크
 https://github.com/shannonlee-dev/python-quiz-game-mission
+
+- clone 실습으로 추가한 문장입니다.
