@@ -163,3 +163,40 @@ class QuizGame:
         print("4. 점수 확인")
         print("5. 종료")
         print("========================================")
+
+    def play_quiz(self):
+        if not self.quizzes:
+            print("등록된 퀴즈가 없습니다.")
+            return
+
+        score = 0
+        total = len(self.quizzes)
+
+        print()
+        print(f"퀴즈를 시작합니다. (총 {total}문제)")
+        print()
+
+        for index, quiz in enumerate(self.quizzes, start=1):
+            quiz.display(index)
+            user_answer = self.read_int_in_range("정답 입력 (1-4): ", 1, 4)
+
+            if quiz.is_correct(user_answer):
+                print("정답입니다.")
+                score += 1
+            else:
+                correct_choice = quiz.choices[quiz.answer - 1]
+                print(f"오답입니다. 정답은 {quiz.answer}번: {correct_choice}")
+            print()
+
+        percentage = int((score / total) * 100)
+
+        print("========================================")
+        print(f"결과: {total}문제 중 {score}문제 정답! ({percentage}점)")
+        if self.best_score is None or score > self.best_score:
+            self.best_score = score
+            self.best_total_questions = total
+            self.save_state()
+            print("새로운 최고 점수입니다.")
+        else:
+            print("최고 점수는 유지되었습니다.")
+        print("========================================")
