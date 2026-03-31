@@ -504,6 +504,90 @@ git branch
   main
 ```
 
+`clone` 실습도 진행했다.
+
+```zsh
+git clone https://github.com/shannonlee-dev/python-quiz-game-mission.git python-quizgame-mission-clone
+```
+
+실행 결과:
+
+```text
+Cloning into 'python-quizgame-mission-clone'...
+remote: Enumerating objects: 62, done.
+remote: Counting objects: 100% (62/62), done.
+remote: Compressing objects: 100% (39/39), done.
+remote: Total 62 (delta 26), reused 54 (delta 18), pack-reused 0 (from 0)
+Receiving objects: 100% (62/62), 374.64 KiB | 31.22 MiB/s, done.
+Resolving deltas: 100% (26/26), done.
+```
+
+```zsh
+pwd
+```
+
+실행 결과:
+
+```text
+/Users/shh921shh4393/dev/python-quizgame-mission-clone
+```
+
+```zsh
+ls -la
+```
+
+실행 결과:
+
+```text
+total 80
+drwxr-xr-x  10 shh921shh4393  shh921shh4393    320 Mar 31 19:49 .
+drwxr-xr-x   8 shh921shh4393  shh921shh4393    256 Mar 31 19:49 ..
+drwxr-xr-x  12 shh921shh4393  shh921shh4393    384 Mar 31 19:49 .git
+-rw-r--r--   1 shh921shh4393  shh921shh4393     30 Mar 31 19:49 .gitignore
+drwxr-xr-x   3 shh921shh4393  shh921shh4393     96 Mar 31 19:49 docs
+-rw-r--r--   1 shh921shh4393  shh921shh4393    556 Mar 31 19:49 main.py
+-rw-r--r--   1 shh921shh4393  shh921shh4393   8661 Mar 31 19:49 quiz_game.py
+-rw-r--r--   1 shh921shh4393  shh921shh4393    881 Mar 31 19:49 quiz.py
+-rw-r--r--   1 shh921shh4393  shh921shh4393  11178 Mar 31 19:49 README.md
+-rw-r--r--   1 shh921shh4393  shh921shh4393   1761 Mar 31 19:49 state.json
+```
+
+원본 저장소에서 `pull` 실습도 확인했다.
+
+```zsh
+git pull origin main
+```
+
+실행 결과:
+
+```text
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (1/1), done.
+remote: Total 3 (delta 2), reused 3 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (3/3), 379 bytes | 126.00 KiB/s, done.
+From https://github.com/shannonlee-dev/python-quiz-game-mission
+ * branch            main       -> FETCH_HEAD
+   c8fae8d..2470336  main       -> origin/main
+Updating c8fae8d..2470336
+Fast-forward
+ README.md | 2 ++
+ 1 file changed, 2 insertions(+)
+```
+
+```zsh
+tail -n 5 README.md
+```
+
+실행 결과:
+
+```text
+## 15. 저장소 링크
+https://github.com/shannonlee-dev/python-quiz-game-mission
+
+- clone 실습으로 추가한 문장입니다.
+```
+
 ## 12. 검증 방법
 
 ## 13. 실행 결과 스크린샷
@@ -512,5 +596,3 @@ git branch
 
 ## 15. 저장소 링크
 https://github.com/shannonlee-dev/python-quiz-game-mission
-
-- clone 실습으로 추가한 문장입니다.
