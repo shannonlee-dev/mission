@@ -50,7 +50,7 @@ class QuizGame:
             self.best_score = None
             self.best_total_questions = None
             self.save_state()
-            print("📂 state.json 파일이 없어 기본 퀴즈 데이터로 시작합니다.")
+            print("state.json 파일이 없어 기본 퀴즈 데이터로 시작합니다.")
             return
 
         try:
@@ -79,13 +79,19 @@ class QuizGame:
             self.best_score = best_score
             self.best_total_questions = best_total_questions
 
+            best_score_text = (
+                "없음"
+                if self.best_score is None
+                else f"{self.best_score} / {self.best_total_questions}"
+            )
+
             print(
-                f"📂 저장된 데이터를 불러왔습니다. "
-                f"(퀴즈 {len(self.quizzes)}개, 최고 점수: {self.best_score})"
+                f"저장된 데이터를 불러왔습니다. "
+                f"(퀴즈 {len(self.quizzes)}개, 최고 점수: {best_score_text})"
             )
 
         except (json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
-            print("⚠️ state.json 파일이 없거나 손상되어 기본 데이터로 복구합니다.")
+            print("state.json 파일이 없거나 손상되어 기본 데이터로 복구합니다.")
             print(f"상세 원인: {error}")
             self.quizzes = self.build_default_quizzes()
             self.best_score = None
@@ -103,4 +109,57 @@ class QuizGame:
             with self.state_path.open("w", encoding="utf-8") as file:
                 json.dump(data, file, ensure_ascii=False, indent=4)
         except OSError as error:
-            print(f"⚠️ state.json 저장 중 오류가 발생했습니다: {error}")
+            print(f"state.json 저장 중 오류가 발생했습니다: {error}")
+
+    def safe_exit(self):
+        print("\n입력이 중단되어 현재 상태를 저장한 뒤 안전하게 종료합니다.")
+        self.save_state()
+        raise SystemExit(0)
+
+    def read_non_empty_text(self, prompt):
+        while True:
+            try:
+                value = input(prompt).strip()
+            except (KeyboardInterrupt, EOFError):
+                self.safe_exit()
+
+            if value == "":
+                print("빈 입력은 허용되지 않습니다. 다시 입력하세요.")
+                continue
+
+            return value
+
+    def read_int_in_range(self, prompt, min_value, max_value):
+        while True:
+            try:
+                raw = input(prompt).strip()
+            except (KeyboardInterrupt, EOFError):
+                self.safe_exit()
+
+            if raw == "":
+                print("빈 입력은 허용되지 않습니다. 다시 입력하세요.")
+                continue
+
+            try:
+                value = int(raw)
+            except ValueError:
+                print(f"잘못된 입력입니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+                continue
+
+            if not (min_value <= value <= max_value):
+                print(f"범위를 벗어났습니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+                continue
+
+            return value
+
+    def show_menu(self):
+        print()
+        print("========================================")
+        print("        나만의 퀴즈 게임")
+        print("========================================")
+        print("1. 퀴즈 풀기")
+        print("2. 퀴즈 추가")
+        print("3. 퀴즈 목록")
+        print("4. 점수 확인")
+        print("5. 종료")
+        print("========================================")
