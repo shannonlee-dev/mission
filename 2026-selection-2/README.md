@@ -396,6 +396,17 @@ cat state.json
 - 허용 범위 밖 숫자 차단
 - `KeyboardInterrupt`, `EOFError` 발생 시 저장 후 안전 종료
 
+아래 스크린샷은 빈 입력, 문자 입력, 범위 밖 숫자 입력을 차례로 검증한 화면이다.
+
+![invalid-input-check](docs/screenshots/invalid-input-check.png)
+
+메뉴 입력 또는 퀴즈 입력 도중 `KeyboardInterrupt`, `EOFError`가 발생하면
+현재 상태를 `state.json`에 저장한 뒤 안전하게 종료하도록 처리했다.
+
+아래 스크린샷은 `Ctrl + C` 입력 시 traceback 없이 안전 종료되는 화면이다.
+
+![safe-exit](docs/screenshots/safe-exit.png)
+
 ## 11. Git 작업 기록
 프로젝트 시작 직후 Git 저장소를 초기화하고 첫 커밋을 만들었다.
 
