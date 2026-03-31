@@ -219,3 +219,26 @@ class QuizGame:
         self.save_state()
 
         print("퀴즈가 추가되었습니다.")
+
+    def list_quizzes(self):
+        if not self.quizzes:
+            print("등록된 퀴즈가 없습니다.")
+            return
+
+        print()
+        print(f"등록된 퀴즈 목록 (총 {len(self.quizzes)}개)")
+        print("----------------------------------------")
+        for index, quiz in enumerate(self.quizzes, start=1):
+            print(f"[{index}] {quiz.question}")
+        print("----------------------------------------")
+
+    def show_best_score(self):
+        if self.best_score is None or self.best_total_questions is None:
+            print("아직 퀴즈를 풀지 않았습니다.")
+            return
+
+        percentage = int((self.best_score / self.best_total_questions) * 100)
+        print(
+            f"최고 점수: {percentage}점 "
+            f"({self.best_total_questions}문제 중 {self.best_score}문제 정답)"
+        )

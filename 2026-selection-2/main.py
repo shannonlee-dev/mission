@@ -12,9 +12,9 @@ def main():
         elif choice == 2:
             game.add_quiz()
         elif choice == 3:
-            print("아직 구현되지 않았습니다.")
+            game.list_quizzes()
         elif choice == 4:
-            print("아직 구현되지 않았습니다.")
+            game.show_best_score()
         elif choice == 5:
             game.save_state()
             print("게임을 종료합니다.")
