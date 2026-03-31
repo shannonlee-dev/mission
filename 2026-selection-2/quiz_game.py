@@ -195,10 +195,10 @@ class QuizGame:
         if self.best_score is None or score > self.best_score:
             self.best_score = score
             self.best_total_questions = total
-            self.save_state()
             print("새로운 최고 점수입니다.")
         else:
             print("최고 점수는 유지되었습니다.")
+        self.save_state()
         print("========================================")
 
     def add_quiz(self):

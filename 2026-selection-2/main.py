@@ -3,6 +3,7 @@ from quiz_game import QuizGame
 
 def main():
     game = QuizGame()
+
     while True:
         game.show_menu()
         choice = game.read_int_in_range("선택: ", 1, 5)
