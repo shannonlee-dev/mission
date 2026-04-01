@@ -33,38 +33,15 @@
 
 - OS: macOS (Darwin Kernel Version 24.6.0)
 - Shell: `/bin/zsh`
-- 터미널: [직접 입력: Terminal / iTerm2 등]
 - Docker 엔진 실행 환경: OrbStack
 - Docker 버전: Docker version 28.5.2
 - Git 버전: git version 2.53.0
 
 ---
 
-## 3. 수행 체크리스트
+## 3. 터미널 조작 로그
 
-- [x] 프로젝트 개요가 있다
-- [x] 실행 환경(OS/쉘/터미널/Docker/Git)이 있다
-- [x] 터미널 조작 로그가 있다
-- [x] 파일 권한 실습 전/후가 있다
-- [x] docker --version, docker info 결과가 있다
-- [x] docker images / ps / ps -a / logs / stats 결과가 있다
-- [x] hello-world 실행 증거가 있다
-- [x] ubuntu 컨테이너 진입 증거가 있다
-- [x] Dockerfile, app 소스가 저장소에 있다
-- [x] 커스텀 이미지 빌드/실행 로그가 있다
-- [x] 포트 매핑 접속 증거가 있다
-- [x] bind mount 전/후 비교가 있다
-- [x] volume 영속성 검증이 있다
-- [x] git config --list 결과가 있다
-- [x] GitHub / VSCode 연동 증거가 있다
-- [x] 트러블슈팅 2건 이상 있다
-- [x] 민감정보가 가려져 있다
-
----
-
-## 4. 터미널 조작 로그
-
-### 4-1. 현재 위치 및 파일 목록 확인
+### 3-1. 현재 위치 및 파일 목록 확인
 
 ```zsh
 $ pwd
@@ -78,7 +55,7 @@ drwxr-xr-x   4 shh921shh4393  shh921shh4393  128 Mar 30 18:04 .
 drwxr-x---+ 21 shh921shh4393  shh921shh4393  672 Mar 30 18:04 ..
 ```
 
-### 4-2. 파일/디렉토리 생성, 복사, 이동, 삭제, 내용 확인
+### 3-2. 파일/디렉토리 생성, 복사, 이동, 삭제, 내용 확인
 
 ```zsh
 $ mkdir -p practice/dir1
@@ -106,9 +83,9 @@ $ rm empty.txt
 
 ---
 
-## 5. 파일 권한 실습
+## 4. 파일 권한 실습
 
-### 5-1. 권한 변경 전/후 비교
+### 4-1. 권한 변경 전/후 비교
 
 ```zsh
 # 권한 변경 전
@@ -125,7 +102,7 @@ drwxr-xr-x  2 shh921shh4393  shh921shh4393  64 Mar 30 18:32 permission-dir
 -rw-r--r--  1 shh921shh4393  shh921shh4393   0 Mar 30 18:31 permission-file.txt
 ```
 
-### 5-2. 권한 설명
+### 4-2. 권한 설명
 
 - `r` = read
 - `w` = write
@@ -146,7 +123,7 @@ drwxr-xr-x  2 shh921shh4393  shh921shh4393  64 Mar 30 18:32 permission-dir
 
 즉, 숫자 권한은 외우는 것이 아니라 **4, 2, 1의 합산 규칙으로 계산**하는 구조다.
 
-### 5-3. 경로 설명
+### 4-3. 경로 설명
 
 - 절대 경로: `/Users/username/dev-workstation-mission/app/index.html`
 - 상대 경로: `./app/index.html`
@@ -160,7 +137,7 @@ drwxr-xr-x  2 shh921shh4393  shh921shh4393  64 Mar 30 18:32 permission-dir
 
 ---
 
-## 6. Docker 설치 및 점검
+## 5. Docker 설치 및 점검
 
 ```zsh
 $ docker --version
@@ -271,9 +248,9 @@ WARNING: DOCKER_INSECURE_NO_IPTABLES_RAW is set
 
 ---
 
-## 7. Docker 기본 운영 명령 및 컨테이너 실습
+## 6. Docker 기본 운영 명령 및 컨테이너 실습
 
-### 7-1. `hello-world` 실행
+### 6-1. `hello-world` 실행
 
 ```zsh
 $ docker run hello-world
@@ -298,7 +275,7 @@ To generate this message, Docker took the following steps:
 
 `hello-world` 실행 결과를 통해 Docker가 이미지를 pull하고 컨테이너를 생성 및 실행할 수 있음을 확인했다.
 
-### 7-2. 이미지 및 컨테이너 목록 확인
+### 6-2. 이미지 및 컨테이너 목록 확인
 
 ```zsh
 $ docker images
@@ -320,7 +297,7 @@ CONTAINER ID   IMAGE         COMMAND    CREATED              STATUS             
 
 `docker ps`에서는 실행 중인 컨테이너만 보이고, `docker ps -a`에서는 종료된 컨테이너까지 확인할 수 있다.
 
-### 7-3. 로그 확인
+### 6-3. 로그 확인
 
 ```zsh
 docker logs ubuntu-test
@@ -334,7 +311,7 @@ exit
 
 ```
 
-### 7-4. Ubuntu 컨테이너 진입
+### 6-4. Ubuntu 컨테이너 진입
 
 ```zsh
 $ docker run -it --name ubuntu-test ubuntu bash
@@ -349,7 +326,7 @@ exit
 
 Ubuntu 컨테이너 내부에 진입하여 `ls`, `echo` 명령을 수행하고 `exit`로 종료했다.
 
-### 7-5. `attach` / `exec` 차이 관찰
+### 6-5. `attach` / `exec` 차이 관찰
 
 - `attach`: 기존 메인 프로세스에 연결
 - `exec`: 실행 중인 컨테이너 안에서 새 명령 실행
@@ -359,7 +336,7 @@ $ docker run -dit --name ubuntu-bg ubuntu bash
 $ docker exec -it ubuntu-bg bash
 ```
 
-### 7-6. 리소스 사용량 확인
+### 6-6. 리소스 사용량 확인
 
 ```zsh
 $ docker stats --no-stream
@@ -376,13 +353,13 @@ CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I
 
 ---
 
-## 8. Dockerfile 기반 커스텀 이미지 제작
+## 7. Dockerfile 기반 커스텀 이미지 제작
 
-### 8-1. 베이스 이미지
+### 7-1. 베이스 이미지
 
 - `nginx:alpine`
 
-### 8-2. Dockerfile
+### 7-2. Dockerfile
 
 ```dockerfile
 FROM nginx:alpine
@@ -393,7 +370,7 @@ ENV APP_ENV=dev
 COPY app/ /usr/share/nginx/html/
 ```
 
-### 8-3. `app/index.html`
+### 7-3. `app/index.html`
 
 ```html
 <!DOCTYPE html>
@@ -409,7 +386,7 @@ COPY app/ /usr/share/nginx/html/
 </html>
 ```
 
-### 8-4. 빌드 및 실행
+### 7-4. 빌드 및 실행
 
 ```zsh
 $ docker build -t my-web:1.0 .
@@ -432,7 +409,7 @@ $ docker run -d --name my-web -p 8080:80 my-web:1.0
 e43a3960e0a3f5aa737a97e1bb2171f9dd5b8c9a8fb2e5e1d2862aaa6255c4ba
 ```
 
-### 8-5. 확인
+### 7-5. 확인
 
 ```zsh
 $ docker ps
@@ -479,7 +456,7 @@ $ curl http://localhost:8080
 
 ---
 
-## 9. 포트 매핑 검증
+## 8. 포트 매핑 검증
 
 ```zsh
 $ docker run -d --name my-web-8080 -p 8080:80 my-web:1.0
@@ -508,7 +485,7 @@ docker run -d --name my-web -p 8080:80 my-web:1.0
 
 ---
 
-## 10. 바인드 마운트 검증
+## 9. 바인드 마운트 검증
 
 ```zsh
 $ docker run -d --name bind-web -p 8081:80 \
@@ -547,7 +524,7 @@ docker run -d --name bind-web -p 8081:80 -v $(pwd)/app:/usr/share/nginx/html ngi
 
 ---
 
-## 11. Docker 볼륨 영속성 검증
+## 10. Docker 볼륨 영속성 검증
 
 ```zsh
 $ docker volume create mydata
@@ -587,9 +564,9 @@ hi
 
 ---
 
-## 12. Git 설정 및 GitHub / VSCode 연동
+## 11. Git 설정 및 GitHub / VSCode 연동
 
-### 12-1. Git 설정
+### 11-1. Git 설정
 
 ```zsh
 $ git config --global user.name "shannonlee-dev"
@@ -608,7 +585,7 @@ core.ignorecase=true
 core.precomposeunicode=true
 ```
 
-### 12-2. 저장소 초기화 및 push
+### 11-2. 저장소 초기화 및 push
 
 ```zsh
 $ git init
@@ -634,32 +611,32 @@ To https://github.com/shannonlee-dev/Codyssey2026.git
 branch 'main' set up to track 'origin/main'.
 ```
 
-### 12-3. VSCode / GitHub 연동
+### 11-3. VSCode / GitHub 연동
 
 ![vscode-github-login](docs/screenshots/vscode-github-login.png)
 
 ---
 
-## 13. 검증 방법 및 결과 위치
+## 12. 검증 방법 및 결과 위치
 
 | 항목 | 검증 방법 | 결과 위치 |
 |---|---|---|
-| 터미널 조작 | `pwd`, `ls -la`, `mkdir`, `touch`, `cp`, `mv`, `rm`, `cat` | 4장 |
-| 파일 권한 | `ls -ld`, `chmod` | 5장 |
-| Docker 설치/점검 | `docker --version`, `docker info` | 6장 |
-| 컨테이너 기본 실행 | `docker run hello-world` | 7장 |
-| Ubuntu 진입 | `docker run -it ubuntu bash` | 7장 |
-| Docker 운영 명령 | `docker images`, `docker ps`, `docker ps -a`, `docker logs`, `docker stats` | 7장 |
-| 커스텀 이미지 | `docker build`, `docker run`, `curl` | 8장 |
-| 포트 매핑 | `-p 8080:80` + 브라우저 접속 | 9장 |
-| 바인드 마운트 | `-v $(pwd)/app:/usr/share/nginx/html` | 10장 |
-| 볼륨 영속성 | `docker volume create`, `docker exec`, 컨테이너 재생성 | 11장 |
-| Git 설정 | `git config --list` | 12장 |
-| GitHub/VSCode 연동 | 연동 화면 스크린샷 | 12장 |
+| 터미널 조작 | `pwd`, `ls -la`, `mkdir`, `touch`, `cp`, `mv`, `rm`, `cat` | 3장 |
+| 파일 권한 | `ls -ld`, `chmod` | 4장 |
+| Docker 설치/점검 | `docker --version`, `docker info` | 5장 |
+| 컨테이너 기본 실행 | `docker run hello-world` | 6장 |
+| Ubuntu 진입 | `docker run -it ubuntu bash` | 6장 |
+| Docker 운영 명령 | `docker images`, `docker ps`, `docker ps -a`, `docker logs`, `docker stats` | 6장 |
+| 커스텀 이미지 | `docker build`, `docker run`, `curl` | 7장 |
+| 포트 매핑 | `-p 8080:80` + 브라우저 접속 | 8장 |
+| 바인드 마운트 | `-v $(pwd)/app:/usr/share/nginx/html` | 9장 |
+| 볼륨 영속성 | `docker volume create`, `docker exec`, 컨테이너 재생성 | 10장 |
+| Git 설정 | `git config --list` | 11장 |
+| GitHub/VSCode 연동 | 연동 화면 스크린샷 | 11장 |
 
 ---
 
-## 14. 트러블슈팅
+## 13. 트러블슈팅
 
 ### 문제 1. `docker info` 실행 실패
 
@@ -689,3 +666,25 @@ branch 'main' set up to track 'origin/main'.
 - 원인 가설: 기본 `ubuntu` 이미지에 `zsh` 미설치
 - 확인: `bash`로는 정상 진입 가능
 - 해결: 실습을 `bash` 기준으로 통일
+
+---
+
+## 14. 수행 체크리스트
+
+- [x] 프로젝트 개요가 있다
+- [x] 실행 환경(OS/쉘/터미널/Docker/Git)이 있다
+- [x] 터미널 조작 로그가 있다
+- [x] 파일 권한 실습 전/후가 있다
+- [x] docker --version, docker info 결과가 있다
+- [x] docker images / ps / ps -a / logs / stats 결과가 있다
+- [x] hello-world 실행 증거가 있다
+- [x] ubuntu 컨테이너 진입 증거가 있다
+- [x] Dockerfile, app 소스가 저장소에 있다
+- [x] 커스텀 이미지 빌드/실행 로그가 있다
+- [x] 포트 매핑 접속 증거가 있다
+- [x] bind mount 전/후 비교가 있다
+- [x] volume 영속성 검증이 있다
+- [x] git config --list 결과가 있다
+- [x] GitHub / VSCode 연동 증거가 있다
+- [x] 트러블슈팅 2건 이상 있다
+- [x] 민감정보가 가려져 있다
