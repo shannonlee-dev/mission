@@ -332,8 +332,40 @@ Ubuntu 컨테이너 내부에 진입하여 `ls`, `echo` 명령을 수행하고 `
 - `exec`: 실행 중인 컨테이너 안에서 새 명령 실행
 
 ```zsh
-$ docker run -it --name ubuntu-bg ubuntu bash
+$ docker run -dit --name ubuntu-bg ubuntu bash
+$ docker ps --filter "name=ubuntu-bg"
+```
+
+먼저 `-dit`로 백그라운드 실행한 뒤, `ubuntu-bg`가 실행 중인지 확인한다.
+
+```zsh
+$ docker attach ubuntu-bg
+root@<container-id>:/# exit
+docker ps --filter "name=ubuntu-bg"
+shh921shh4393@c4r4s8 Codyssey2026 % docker ps --filter "name=ubuntu-bg"
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+```
+`attach`는 컨테이너의 메인 프로세스와 같은 세션을 공유한다. 따라서 `attach` 상태에서 `exit`를 치면 메인 `bash`가 종료되어 컨테이너도 함께 종료된다.
+
+```zsh
+
 $ docker exec -it ubuntu-bg bash
+root@<container-id>:/# exit
+$ docker ps --filter "name=ubuntu-bg"
+CONTAINER ID   IMAGE     COMMAND   CREATED         STATUS          PORTS     NAMES
+941a9c654a87   ubuntu    "bash"    5 minutes ago   Up 24 seconds             ubuntu-bg
+```
+# exec: 실행 중 컨테이너 안에서 새 bash 프로세스 실행
+# exec 셸 종료 후에도 컨테이너는 계속 실행됨
+
+`exec`는 메인 프로세스를 건드리지 않고, 별도 프로세스를 잠깐 실행하는 방식이다.
+
+
+- 도커 재시작과 삭제.
+```zsh
+$ docker start ubuntu-bg
+
+$ docker rm -f ubuntu-bg
 ```
 
 ### 6-6. 리소스 사용량 확인
