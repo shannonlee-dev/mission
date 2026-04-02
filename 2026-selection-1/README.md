@@ -332,7 +332,7 @@ Ubuntu 컨테이너 내부에 진입하여 `ls`, `echo` 명령을 수행하고 `
 - `exec`: 실행 중인 컨테이너 안에서 새 명령 실행
 
 ```zsh
-$ docker run -dit --name ubuntu-bg ubuntu bash
+$ docker run -it --name ubuntu-bg ubuntu bash
 $ docker exec -it ubuntu-bg bash
 ```
 
