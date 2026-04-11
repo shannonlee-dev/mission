@@ -720,3 +720,72 @@ branch 'main' set up to track 'origin/main'.
 - [x] GitHub / VSCode 연동 증거가 있다
 - [x] 트러블슈팅 2건 이상 있다
 - [x] 민감정보가 가려져 있다
+
+---
+
+## 15. 부록: 피드백 기반 심화 학습 정리
+
+### 15-1. 터미널, 셸, 커널의 역할과 명령어 해석
+
+- 터미널(Terminal): 사용자가 텍스트로 명령을 입력하고 결과를 보는 인터페이스 프로그램
+- 셸(Shell): 사용자의 명령을 해석해서 실행하는 명령 해석기(`zsh`, `bash` 등)
+- 커널(Kernel): 프로세스, 메모리, 파일시스템, 디바이스를 관리하는 운영체제 핵심
+
+명령어는 "셸이 해석한 실행 단위"이고, 그 실체는 여러 종류가 있다.
+
+- 외부 프로그램(external command): 실행 파일로 존재 (`ls`, `cp`, `mv` 등)
+- 셸 내장 명령(shell builtin): 셸 내부 기능 (`cd`, `pwd`(셸별), `export` 등)
+- 별칭(alias) / 함수(function): 사용자가 셸에서 정의한 단축 명령
+
+즉, `ls`와 `cp`는 일반적으로 둘 다 외부 프로그램이며(예: GNU coreutils), `cd`처럼 셸 내장 명령과 구분해서 이해하는 것이 정확하다.
+
+아래 명령으로 각 명령의 성격을 직접 확인할 수 있다.
+
+```zsh
+$ type -a ls cp cd
+$ which ls
+$ which cp
+```
+
+### 15-2. `umask`, `chmod`, `chown`, `chgrp`와 최소 권한 원칙
+
+`umask`는 "새 파일/디렉토리를 만들 때 기본 권한에서 제거할 비트"를 의미한다.
+
+- 파일 기본값: `666`
+- 디렉토리 기본값: `777`
+- 실제 생성 권한 = 기본값 - `umask`
+
+예시: `umask 022`
+
+- 새 파일: `666 - 022 = 644`
+- 새 디렉토리: `777 - 022 = 755`
+
+확인 명령:
+
+```zsh
+$ umask
+$ umask -S
+```
+
+권한/소유권 관리 명령의 역할은 다음과 같다.
+
+- `chmod`: 접근 권한 비트(`rwx`) 변경
+- `chown`: 파일 소유자(owner) 변경
+- `chgrp`: 파일 그룹(group) 변경
+
+실무에서는 "최소 권한 원칙(Principle of Least Privilege)"에 따라 꼭 필요한 권한만 부여하고, 작업 종료 후 회수한다.
+
+```zsh
+# 예시: 배포 사용자와 그룹만 접근 허용
+$ sudo chown deploy:devops /srv/myapp/config.yml
+$ sudo chmod 640 /srv/myapp/config.yml
+
+# 예시: 특정 디렉토리를 운영 그룹에만 열기
+$ sudo chgrp devops /srv/myapp
+$ sudo chmod 750 /srv/myapp
+
+# 예시: 권한 회수
+$ chmod g-rwx,o-rwx /srv/myapp/secrets
+```
+
+핵심은 "처음부터 넓게 열지 않고, 필요한 범위만 열고, 필요 없어지면 바로 닫는 운영 습관"이다.
