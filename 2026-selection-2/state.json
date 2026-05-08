@@ -1,0 +1,66 @@
+{
+    "quizzes": [
+        {
+            "question": "Python의 창시자는 누구인가?",
+            "choices": [
+                "귀도 반 로섬",
+                "리누스 토르발스",
+                "제임스 고슬링",
+                "비야네 스트롭스트룹"
+            ],
+            "answer": 1
+        },
+        {
+            "question": "Python에서 리스트를 만들 때 사용하는 기호는 무엇인가?",
+            "choices": [
+                "{}",
+                "[]",
+                "()",
+                "<>"
+            ],
+            "answer": 2
+        },
+        {
+            "question": "조건이 참일 때만 실행 흐름을 나누는 문법은 무엇인가?",
+            "choices": [
+                "for",
+                "while",
+                "if",
+                "def"
+            ],
+            "answer": 3
+        },
+        {
+            "question": "문자열을 숫자로 변환할 때 주로 사용하는 함수는 무엇인가?",
+            "choices": [
+                "str()",
+                "list()",
+                "int()",
+                "dict()"
+            ],
+            "answer": 3
+        },
+        {
+            "question": "반복 가능한 객체를 순회할 때 자주 사용하는 반복문은 무엇인가?",
+            "choices": [
+                "if",
+                "for",
+                "class",
+                "try"
+            ],
+            "answer": 2
+        },
+        {
+            "question": "가나다 만 든 사람.",
+            "choices": [
+                "세",
+                "종",
+                "대",
+                "세종"
+            ],
+            "answer": 4
+        }
+    ],
+    "best_score": 5,
+    "best_total_questions": 6
+}
