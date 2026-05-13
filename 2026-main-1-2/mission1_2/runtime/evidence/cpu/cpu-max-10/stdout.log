@@ -1,0 +1,65 @@
+>>> Starting Agent Boot Sequence...
+[1/6] Checking User Account               [OK]
+   ... Running as service user 'maincodex' (uid=1006)
+[2/6] Verifying Environment Variables     [OK]
+   ... All required Envs correct
+[3/6] Checking Required Files             [OK]
+   ... Verified 'secret.key' with correct key string.
+[4/6] Checking Port Availability          [OK]
+   ... Port 15034 is available.
+[5/6] Verifying Log Permission            [OK]
+   ... Log directory is writable: /home/maincodex/harness/codex-harness/tasks/mission1_2/runtime/evidence/cpu/cpu-max-10
+[6/6] Verifying Mission Environment       [OK]
+   ... MEMORY_LIMIT=512MB, CPU_MAX_OCCUPY=10%, MULTI_THREAD_ENABLE=False
+------------------------------------------------------------
+All Boot Checks Passed!
+Agent READY
+2026-05-12 12:57:17,058 [INFO] [SafetyGuard] Process priority lowered (nice=10).
+2026-05-12 12:57:17,059 [INFO] Agent listening at port 15034
+
+==================================================
+ [ Agent Initiate ] Resource Check 
+==================================================
+ [ MEMORY ] Limit: 512MB 		[ OK ]
+ [ CPU    ] Limit: 10%  		[ OK ]
+ [ THREAD ] Concurrency: False 		[ OK ]
+--------------------------------------------------
+ >>> SYSTEM STATUS: STABLE. STARTING WORKLOAD MONITORING...
+==================================================
+
+2026-05-12 12:57:19,059 [INFO] >>> Scenario Selected: [Healthy System Monitoring]
+
+>>> [SYSTEM] ALL CONFIGURATIONS OPTIMAL. RUNNING STABILITY TEST... <<<
+
+2026-05-12 12:57:19,062 [INFO] [Scheduler] Task Scheduler Initialized.
+2026-05-12 12:57:19,062 [INFO] [Scheduler] Registered Tasks: ['Thread-A', 'Thread-B', 'Thread-C']
+2026-05-12 12:57:19,062 [INFO] [Scheduler] Starting task execution...
+2026-05-12 12:57:19,062 [INFO] [Thread-A] Task Started. Calculating... (20%)
+2026-05-12 12:57:19,113 [INFO] [Thread-A] Calculating... (40%)
+2026-05-12 12:57:19,164 [INFO] [Thread-A] Preempted. Progress saved at (40%)
+2026-05-12 12:57:19,214 [INFO] [Thread-B] Task Started. Calculating... (20%)
+2026-05-12 12:57:19,265 [INFO] [Thread-B] Calculating... (40%)
+2026-05-12 12:57:19,315 [INFO] [Thread-B] Preempted. Progress saved at (40%)
+2026-05-12 12:57:19,366 [INFO] [Thread-C] Task Started. Calculating... (20%)
+2026-05-12 12:57:19,416 [INFO] [Thread-C] Calculating... (40%)
+2026-05-12 12:57:19,467 [INFO] [Thread-C] Preempted. Progress saved at (40%)
+2026-05-12 12:57:19,517 [INFO] [Thread-A] Resumed. Calculating... (60%)
+2026-05-12 12:57:19,567 [INFO] [Thread-A] Calculating... (80%)
+2026-05-12 12:57:19,618 [INFO] [Thread-A] Preempted. Progress saved at (80%)
+2026-05-12 12:57:19,668 [INFO] [Thread-B] Resumed. Calculating... (60%)
+2026-05-12 12:57:19,718 [INFO] [Thread-B] Calculating... (80%)
+2026-05-12 12:57:19,769 [INFO] [Thread-B] Preempted. Progress saved at (80%)
+2026-05-12 12:57:19,819 [INFO] [Thread-C] Resumed. Calculating... (60%)
+2026-05-12 12:57:19,870 [INFO] [Thread-C] Calculating... (80%)
+2026-05-12 12:57:19,920 [INFO] [Thread-C] Preempted. Progress saved at (80%)
+2026-05-12 12:57:19,971 [INFO] [Thread-A] Resumed. Calculating... (100%)
+2026-05-12 12:57:20,022 [INFO] [Thread-B] Resumed. Calculating... (100%)
+2026-05-12 12:57:20,072 [INFO] [Thread-C] Resumed. Calculating... (100%)
+2026-05-12 12:57:20,123 [INFO] [Scheduler] All tasks completed.
+2026-05-12 12:57:20,143 [INFO] [CpuWorker] Started. Maximum CPU Limit: 10%
+2026-05-12 12:57:20,144 [INFO] [MemoryWorker] Current Heap: 25MB
+2026-05-12 12:57:20,144 [INFO] [CpuWorker] Current Load: 5.00%
+2026-05-12 12:57:23,163 [INFO] [MemoryWorker] Current Heap: 50MB
+2026-05-12 12:57:23,245 [INFO] [CpuWorker] Current Load: 7.88%
+2026-05-12 12:57:25,347 [INFO] [CpuWorker] Peak reached (10.00%). Starting cooldown...
+2026-05-12 12:57:26,183 [INFO] [MemoryWorker] Current Heap: 75MB
