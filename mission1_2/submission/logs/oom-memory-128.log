@@ -1,0 +1,37 @@
+>>> Starting Agent Boot Sequence...
+[1/6] Checking User Account               [OK]
+   ... Running as service user 'shh921shh4393' (uid=1267600500)
+[2/6] Verifying Environment Variables     [OK]
+   ... All required Envs correct
+[3/6] Checking Required Files             [OK]
+   ... Verified 'secret.key' with correct key string.
+[4/6] Checking Port Availability          [OK]
+   ... Port 15034 is available.
+[5/6] Verifying Log Permission            [OK]
+   ... Log directory is writable: /home/shh921shh4393/agent-app/logs
+[6/6] Verifying Mission Environment       [OK]
+   ... MEMORY_LIMIT=128MB, CPU_MAX_OCCUPY=100%, MULTI_THREAD_ENABLE=False
+------------------------------------------------------------
+All Boot Checks Passed!
+Agent READY
+2026-05-13 18:33:22,094 [INFO] [SafetyGuard] Process priority lowered (nice=10).
+2026-05-13 18:33:22,095 [INFO] Agent listening at port 15034
+
+==================================================
+ [ Agent Initiate ] Resource Check 
+==================================================
+ [ MEMORY ] Limit: 128MB 		[ WARNING: Recommend Over 256MB ]
+ [ CPU    ] Limit: 100%  		[ WARNING: Recommend Under 50% ]
+ [ THREAD ] Concurrency: False 		[ OK ]
+--------------------------------------------------
+ >>> SYSTEM STATUS: STABLE. STARTING WORKLOAD MONITORING...
+==================================================
+
+2026-05-13 18:33:24,109 [INFO] [MemoryWorker] Current Heap: 25MB
+2026-05-13 18:33:27,150 [INFO] [MemoryWorker] Current Heap: 50MB
+2026-05-13 18:33:30,191 [INFO] [MemoryWorker] Current Heap: 75MB
+2026-05-13 18:33:33,230 [INFO] [MemoryWorker] Current Heap: 100MB
+2026-05-13 18:33:36,271 [INFO] [MemoryWorker] Current Heap: 125MB
+2026-05-13 18:33:39,311 [INFO] [MemoryWorker] Current Heap: 150MB
+2026-05-13 18:33:39,311 [CRITICAL] [MemoryGuard] Memory limit exceeded (150MB >= 128MB) / (Recommend Over 256MB)
+2026-05-13 18:33:39,311 [CRITICAL] [MemoryGuard] Self-terminating process 8984 to prevent system instability.

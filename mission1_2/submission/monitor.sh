@@ -69,6 +69,14 @@ sample_mem_mb() {
   ps -p "$pid" -o rss= | awk '{printf "%.1f", ($1 + 0) / 1024}'
 }
 
+sample_mem_kb() {
+  if [ -r "/proc/$pid/status" ]; then
+    awk '/^VmRSS:/ {print $2; exit}' "/proc/$pid/status"
+    return 0
+  fi
+  printf '0'
+}
+
 sample_disk_percent() {
   if [ -n "${MONITOR_DISK_OVERRIDE:-}" ]; then
     printf '%s\n' "$MONITOR_DISK_OVERRIDE"
@@ -157,11 +165,23 @@ printf '\n%s\n' '[RESOURCE MONITORING]'
 cpu="$(sample_cpu_percent)"
 mem="$(sample_mem_percent)"
 mem_mb="$(sample_mem_mb)"
+mem_kb="$(sample_mem_kb)"
 disk="$(sample_disk_percent)"
 printf 'CPU Usage : %s%%\n' "$cpu"
 printf 'MEM Usage : %s%%\n' "$mem"
 printf 'MEM RSS   : %sMB\n' "$mem_mb"
 printf 'DISK Used : %s%%\n' "$disk"
+
+if [ "${MONITOR_DEBUG:-0}" = "1" ]; then
+  mem_total_kb="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
+  mem_pct_calc="$(awk -v rss="$mem_kb" -v total="$mem_total_kb" 'BEGIN { if (total > 0) { printf "%.3f", (rss / total) * 100 } else { printf "0.000" } }')"
+  ps_mem_raw="$(ps -p "$pid" -o pmem= | tr -d ' ')"
+  printf '\n[DEBUG]\n'
+  printf 'ps pmem raw : %s%%\n' "${ps_mem_raw:-0}"
+  printf 'VmRSS       : %s kB\n' "$mem_kb"
+  printf 'MemTotal    : %s kB\n' "$mem_total_kb"
+  printf 'Calc MEM %%  : %s%%\n' "$mem_pct_calc"
+fi
 
 warn_if_gt "CPU" "$cpu" "20"
 warn_if_gt "MEM" "$mem" "10"
