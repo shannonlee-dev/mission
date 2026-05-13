@@ -1,0 +1,31 @@
+2026-05-12 12:58:31,163 [INFO] [SafetyGuard] Process priority lowered (nice=10).
+2026-05-12 12:58:31,163 [INFO] Agent listening at port 15034
+2026-05-12 12:58:33,164 [INFO] >>> Scenario Selected: [Healthy System Monitoring]
+2026-05-12 12:58:33,165 [INFO] [Scheduler] Task Scheduler Initialized.
+2026-05-12 12:58:33,166 [INFO] [Scheduler] Registered Tasks: ['Thread-A', 'Thread-B', 'Thread-C']
+2026-05-12 12:58:33,166 [INFO] [Scheduler] Starting task execution...
+2026-05-12 12:58:33,166 [INFO] [Thread-A] Task Started. Calculating... (20%)
+2026-05-12 12:58:33,217 [INFO] [Thread-A] Calculating... (40%)
+2026-05-12 12:58:33,267 [INFO] [Thread-A] Preempted. Progress saved at (40%)
+2026-05-12 12:58:33,318 [INFO] [Thread-B] Task Started. Calculating... (20%)
+2026-05-12 12:58:33,368 [INFO] [Thread-B] Calculating... (40%)
+2026-05-12 12:58:33,419 [INFO] [Thread-B] Preempted. Progress saved at (40%)
+2026-05-12 12:58:33,469 [INFO] [Thread-C] Task Started. Calculating... (20%)
+2026-05-12 12:58:33,520 [INFO] [Thread-C] Calculating... (40%)
+2026-05-12 12:58:33,571 [INFO] [Thread-C] Preempted. Progress saved at (40%)
+2026-05-12 12:58:33,622 [INFO] [Thread-A] Resumed. Calculating... (60%)
+2026-05-12 12:58:33,672 [INFO] [Thread-A] Calculating... (80%)
+2026-05-12 12:58:33,723 [INFO] [Thread-A] Preempted. Progress saved at (80%)
+2026-05-12 12:58:33,774 [INFO] [Thread-B] Resumed. Calculating... (60%)
+2026-05-12 12:58:33,824 [INFO] [Thread-B] Calculating... (80%)
+2026-05-12 12:58:33,875 [INFO] [Thread-B] Preempted. Progress saved at (80%)
+2026-05-12 12:58:33,925 [INFO] [Thread-C] Resumed. Calculating... (60%)
+2026-05-12 12:58:33,976 [INFO] [Thread-C] Calculating... (80%)
+2026-05-12 12:58:34,026 [INFO] [Thread-C] Preempted. Progress saved at (80%)
+2026-05-12 12:58:34,077 [INFO] [Thread-A] Resumed. Calculating... (100%)
+2026-05-12 12:58:34,127 [INFO] [Thread-B] Resumed. Calculating... (100%)
+2026-05-12 12:58:34,177 [INFO] [Thread-C] Resumed. Calculating... (100%)
+2026-05-12 12:58:34,228 [INFO] [Scheduler] All tasks completed.
+2026-05-12 12:58:34,245 [INFO] [MemoryWorker] Current Heap: 25MB
+2026-05-12 12:58:34,246 [INFO] [CpuWorker] Started. Maximum CPU Limit: 10%
+2026-05-12 12:58:34,246 [INFO] [CpuWorker] Current Load: 5.00%
