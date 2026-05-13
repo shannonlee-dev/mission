@@ -1,0 +1,98 @@
+====== SYSTEM MONITOR RESULT ======
+
+[HEALTH CHECK]
+Checking process 'agent-app-leak'... [OK] (PID: 31363)
+Checking port 15034... [OK]
+[WARNING] firewall is not active
+
+[RESOURCE MONITORING]
+CPU Usage : 1.4%
+MEM Usage : 0.2%
+MEM RSS   : 20.8MB
+DISK Used : 3%
+
+[INFO] Log appended: /home/maincodex/harness/codex-harness/tasks/mission1_2/runtime/evidence/oom/memory-128/monitor.log
+====== SYSTEM MONITOR RESULT ======
+
+[HEALTH CHECK]
+Checking process 'agent-app-leak'... [OK] (PID: 31363)
+Checking port 15034... [OK]
+[WARNING] firewall is not active
+
+[RESOURCE MONITORING]
+CPU Usage : 2.4%
+MEM Usage : 0.5%
+MEM RSS   : 45.8MB
+DISK Used : 3%
+
+[INFO] Log appended: /home/maincodex/harness/codex-harness/tasks/mission1_2/runtime/evidence/oom/memory-128/monitor.log
+====== SYSTEM MONITOR RESULT ======
+
+[HEALTH CHECK]
+Checking process 'agent-app-leak'... [OK] (PID: 31363)
+Checking port 15034... [OK]
+[WARNING] firewall is not active
+
+[RESOURCE MONITORING]
+CPU Usage : 1.0%
+MEM Usage : 0.5%
+MEM RSS   : 45.8MB
+DISK Used : 3%
+
+[INFO] Log appended: /home/maincodex/harness/codex-harness/tasks/mission1_2/runtime/evidence/oom/memory-128/monitor.log
+====== SYSTEM MONITOR RESULT ======
+
+[HEALTH CHECK]
+Checking process 'agent-app-leak'... [OK] (PID: 31363)
+Checking port 15034... [OK]
+[WARNING] firewall is not active
+
+[RESOURCE MONITORING]
+CPU Usage : 2.0%
+MEM Usage : 0.8%
+MEM RSS   : 70.8MB
+DISK Used : 3%
+
+[INFO] Log appended: /home/maincodex/harness/codex-harness/tasks/mission1_2/runtime/evidence/oom/memory-128/monitor.log
+====== SYSTEM MONITOR RESULT ======
+
+[HEALTH CHECK]
+Checking process 'agent-app-leak'... [OK] (PID: 31363)
+Checking port 15034... [OK]
+[WARNING] firewall is not active
+
+[RESOURCE MONITORING]
+CPU Usage : 1.1%
+MEM Usage : 0.8%
+MEM RSS   : 70.8MB
+DISK Used : 3%
+
+[INFO] Log appended: /home/maincodex/harness/codex-harness/tasks/mission1_2/runtime/evidence/oom/memory-128/monitor.log
+====== SYSTEM MONITOR RESULT ======
+
+[HEALTH CHECK]
+Checking process 'agent-app-leak'... [OK] (PID: 31363)
+Checking port 15034... [OK]
+[WARNING] firewall is not active
+
+[RESOURCE MONITORING]
+CPU Usage : 1.1%
+MEM Usage : 0.8%
+MEM RSS   : 70.8MB
+DISK Used : 3%
+
+[INFO] Log appended: /home/maincodex/harness/codex-harness/tasks/mission1_2/runtime/evidence/oom/memory-128/monitor.log
+====== SYSTEM MONITOR RESULT ======
+
+[HEALTH CHECK]
+Checking process 'agent-app-leak'... [OK] (PID: 31363)
+Checking port 15034... [OK]
+[WARNING] firewall is not active
+
+[RESOURCE MONITORING]
+CPU Usage : 1.5%
+MEM Usage : 1.2%
+MEM RSS   : 95.8MB
+DISK Used : 3%
+
+[INFO] Log appended: /home/maincodex/harness/codex-harness/tasks/mission1_2/runtime/evidence/oom/memory-128/monitor.log

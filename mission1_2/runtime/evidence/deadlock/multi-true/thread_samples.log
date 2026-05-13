@@ -1,0 +1,84 @@
+--- sample 1 pid=32744 app_log_bytes=1517 stagnant_count=0 ---
+maincod+   321 31202  0 12:58 ?        00:00:00 awk -v pid=32744 $2 == pid || $3 == pid || /agent-app-leak/
+maincod+ 32744 31202  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+maincod+ 32748 32744  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+  PID   TID STAT %CPU %MEM COMMAND
+32744 32744 S     0.6  0.0 agent-app-leak
+top - 12:58:05 up  1:13,  0 user,  load average: 0.27, 0.28, 0.19
+Threads:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  1.2 us,  0.0 sy,  0.0 ni, 98.8 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
+MiB Mem :   7870.2 total,   5367.0 free,   2003.7 used,    693.2 buff/cache     
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.   5866.6 avail Mem 
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+32744 maincod+  20   0    2904   1920   1792 S   0.0   0.0   0:00.07 agent-app+
+--- sample 2 pid=32744 app_log_bytes=1517 stagnant_count=1 ---
+maincod+   329 31202  0 12:58 ?        00:00:00 awk -v pid=32744 $2 == pid || $3 == pid || /agent-app-leak/
+maincod+ 32744 31202  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+maincod+ 32748 32744  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+  PID   TID STAT %CPU %MEM COMMAND
+32744 32744 S     0.6  0.0 agent-app-leak
+top - 12:58:06 up  1:13,  0 user,  load average: 0.27, 0.28, 0.19
+Threads:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
+MiB Mem :   7870.2 total,   5367.3 free,   2003.3 used,    693.2 buff/cache     
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.   5866.9 avail Mem 
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+32744 maincod+  20   0    2904   1920   1792 S   0.0   0.0   0:00.07 agent-app+
+--- sample 3 pid=32744 app_log_bytes=1517 stagnant_count=2 ---
+maincod+   343 31202  0 12:58 ?        00:00:00 awk -v pid=32744 $2 == pid || $3 == pid || /agent-app-leak/
+maincod+ 32744 31202  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+maincod+ 32748 32744  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+  PID   TID STAT %CPU %MEM COMMAND
+32744 32744 S     0.5  0.0 agent-app-leak
+top - 12:58:07 up  1:13,  0 user,  load average: 0.27, 0.28, 0.19
+Threads:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  1.2 us,  0.0 sy,  0.0 ni, 98.8 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
+MiB Mem :   7870.2 total,   5368.5 free,   2002.1 used,    693.2 buff/cache     
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.   5868.1 avail Mem 
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+32744 maincod+  20   0    2904   1920   1792 S   0.0   0.0   0:00.07 agent-app+
+--- sample 4 pid=32744 app_log_bytes=1517 stagnant_count=3 ---
+maincod+   351 31202  0 12:58 ?        00:00:00 awk -v pid=32744 $2 == pid || $3 == pid || /agent-app-leak/
+maincod+ 32744 31202  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+maincod+ 32748 32744  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+  PID   TID STAT %CPU %MEM COMMAND
+32744 32744 S     0.5  0.0 agent-app-leak
+top - 12:58:08 up  1:13,  0 user,  load average: 0.27, 0.28, 0.19
+Threads:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  1.2 us,  1.2 sy,  0.0 ni, 97.6 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
+MiB Mem :   7870.2 total,   5366.3 free,   2004.3 used,    693.2 buff/cache     
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.   5865.9 avail Mem 
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+32744 maincod+  20   0    2904   1920   1792 S   0.0   0.0   0:00.07 agent-app+
+--- sample 5 pid=32744 app_log_bytes=1517 stagnant_count=4 ---
+maincod+   365 31202  0 12:58 ?        00:00:00 awk -v pid=32744 $2 == pid || $3 == pid || /agent-app-leak/
+maincod+ 32744 31202  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+maincod+ 32748 32744  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+  PID   TID STAT %CPU %MEM COMMAND
+32744 32744 S     0.4  0.0 agent-app-leak
+top - 12:58:10 up  1:13,  0 user,  load average: 0.24, 0.27, 0.19
+Threads:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  1.2 us,  0.0 sy,  0.0 ni, 98.8 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
+MiB Mem :   7870.2 total,   5367.0 free,   2003.6 used,    693.3 buff/cache     
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.   5866.7 avail Mem 
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+32744 maincod+  20   0    2904   1920   1792 S   0.0   0.0   0:00.07 agent-app+
+--- sample 6 pid=32744 app_log_bytes=1517 stagnant_count=5 ---
+maincod+   373 31202  0 12:58 ?        00:00:00 awk -v pid=32744 $2 == pid || $3 == pid || /agent-app-leak/
+maincod+ 32744 31202  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+maincod+ 32748 32744  0 12:57 ?        00:00:00 /home/maincodex/harness/codex-harness/tasks/mission1_2/submission/agent-app-leak/agent-app-leak
+  PID   TID STAT %CPU %MEM COMMAND
+32744 32744 S     0.4  0.0 agent-app-leak
+top - 12:58:11 up  1:13,  0 user,  load average: 0.24, 0.27, 0.19
+Threads:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
+MiB Mem :   7870.2 total,   5367.8 free,   2002.8 used,    693.3 buff/cache     
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.   5867.4 avail Mem 
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+32744 maincod+  20   0    2904   1920   1792 S   0.0   0.0   0:00.07 agent-app+
