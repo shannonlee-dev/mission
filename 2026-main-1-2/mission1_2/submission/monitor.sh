@@ -2,28 +2,19 @@
 set -u
 set -o pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_PATTERN="${AGENT_APP_PROCESS_NAME:-agent-app-leak}"
 APP_PID="${AGENT_APP_PID:-}"
 PORT="${AGENT_PORT:-15034}"
-LOG_FILE="${AGENT_LOG_DIR:-/var/log/agent-app}/monitor.log"
+DEFAULT_LOG_DIR="${MONITOR_LOG_DIR:-${AGENT_LOG_DIR:-$SCRIPT_DIR/evidence}}"
+LOG_FILE="${MONITOR_LOG_FILE:-$DEFAULT_LOG_DIR/monitor.log}"
 MAX_LOG_SIZE="${MONITOR_MAX_LOG_SIZE:-10485760}"
 MAX_ROTATED_FILES="${MONITOR_MAX_ROTATED_FILES:-10}"
+CPU_SAMPLE_INTERVAL="${MONITOR_CPU_INTERVAL:-1}"
 
 fail() {
   printf '%s\n' "$1"
   exit 1
-}
-
-warn_if_gt() {
-  label="$1"
-  value="$2"
-  threshold="$3"
-  awk -v label="$label" -v value="$value" -v threshold="$threshold" '
-    BEGIN {
-      if ((value + 0) > (threshold + 0)) {
-        printf("[WARNING] %s threshold exceeded (%s%% > %s%%)\n", label, value, threshold)
-      }
-    }'
 }
 
 sample_cpu_percent() {
@@ -35,7 +26,7 @@ sample_cpu_percent() {
   read -r _ user1 nice1 system1 idle1 iowait1 irq1 softirq1 steal1 _ < /proc/stat
   total1=$((user1 + nice1 + system1 + idle1 + iowait1 + irq1 + softirq1 + steal1))
   idle_all1=$((idle1 + iowait1))
-  sleep 1
+  sleep "$CPU_SAMPLE_INTERVAL"
   read -r _ user2 nice2 system2 idle2 iowait2 irq2 softirq2 steal2 _ < /proc/stat
   total2=$((user2 + nice2 + system2 + idle2 + iowait2 + irq2 + softirq2 + steal2))
   idle_all2=$((idle2 + iowait2))
@@ -133,59 +124,21 @@ find_app_pid() {
     | awk -v self="$$" '$1 != self {print; exit}'
 }
 
-printf '%s\n' '====== SYSTEM MONITOR RESULT ======'
-printf '\n%s\n' '[HEALTH CHECK]'
-
 pid="$(find_app_pid)"
 if [ -z "$pid" ]; then
   fail "Checking process '$APP_PATTERN'... [FAIL]"
 fi
-printf "Checking process '%s'... [OK] (PID: %s)\n" "$APP_PATTERN" "$pid"
-
-if ! ss -tuln | awk -v port=":$PORT" '$5 ~ port "$" {found = 1} END {exit found ? 0 : 1}'; then
-  fail "Checking port $PORT... [FAIL]"
+port_ok=0
+if ss -tuln | awk -v port=":$PORT" '$5 ~ port "$" {found = 1} END {exit found ? 0 : 1}'; then
+  port_ok=1
 fi
-printf 'Checking port %s... [OK]\n' "$PORT"
-
-if command -v ufw >/dev/null 2>&1; then
-  firewall_status="$(ufw status 2>/dev/null | awk -F': ' '/^Status:/ {print $2; exit}')"
-  if [ "$firewall_status" != "active" ]; then
-    printf '%s\n' '[WARNING] firewall is not active'
-  fi
-elif command -v firewall-cmd >/dev/null 2>&1; then
-  firewall_state="$(firewall-cmd --state 2>/dev/null || printf 'unknown')"
-  if [ "$firewall_state" != "running" ]; then
-    printf '%s\n' '[WARNING] firewall is not active'
-  fi
-else
-  printf '%s\n' '[WARNING] firewall command is not available'
-fi
-
-printf '\n%s\n' '[RESOURCE MONITORING]'
 cpu="$(sample_cpu_percent)"
 mem="$(sample_mem_percent)"
 mem_mb="$(sample_mem_mb)"
 mem_kb="$(sample_mem_kb)"
 disk="$(sample_disk_percent)"
-printf 'CPU Usage : %s%%\n' "$cpu"
-printf 'MEM Usage : %s%%\n' "$mem"
-printf 'MEM RSS   : %sMB\n' "$mem_mb"
-printf 'DISK Used : %s%%\n' "$disk"
-
-if [ "${MONITOR_DEBUG:-0}" = "1" ]; then
-  mem_total_kb="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
-  mem_pct_calc="$(awk -v rss="$mem_kb" -v total="$mem_total_kb" 'BEGIN { if (total > 0) { printf "%.3f", (rss / total) * 100 } else { printf "0.000" } }')"
-  ps_mem_raw="$(ps -p "$pid" -o pmem= | tr -d ' ')"
-  printf '\n[DEBUG]\n'
-  printf 'ps pmem raw : %s%%\n' "${ps_mem_raw:-0}"
-  printf 'VmRSS       : %s kB\n' "$mem_kb"
-  printf 'MemTotal    : %s kB\n' "$mem_total_kb"
-  printf 'Calc MEM %%  : %s%%\n' "$mem_pct_calc"
-fi
-
-warn_if_gt "CPU" "$cpu" "20"
-warn_if_gt "MEM" "$mem" "10"
-warn_if_gt "DISK_USED" "$disk" "80"
+timestamp="$(date '+%Y-%m-%dT%H:%M:%S')"
+line="ts=$timestamp pid=$pid cpu=$cpu mem=$mem rss_mb=$mem_mb disk_used=$disk port=$PORT port_ok=$port_ok"
 
 log_dir="$(dirname "$LOG_FILE")"
 if [ ! -d "$log_dir" ]; then
@@ -196,8 +149,7 @@ if [ ! -w "$log_dir" ]; then
 fi
 
 rotate_logs_if_needed
-printf '[%s] PID:%s CPU:%s%% MEM:%s%% RSS_MB:%s DISK_USED:%s%%\n' \
-  "$(date '+%Y-%m-%d %H:%M:%S')" "$pid" "$cpu" "$mem" "$mem_mb" "$disk" >> "$LOG_FILE" \
+printf '%s\n' "$line" >> "$LOG_FILE" \
   || fail "Failed to append log: $LOG_FILE"
 
-printf '\n[INFO] Log appended: %s\n' "$LOG_FILE"
+printf '%s\n' "$line"

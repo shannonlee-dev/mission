@@ -11,7 +11,7 @@ ID: ENV-002
 
 증거 위치:
 - `runtime/work.log`
-- `runtime/evidence/boot-external/stdout.log`
+- `runtime/evidence/boot-ready/stdout.log`
 - `runtime/evidence/oom/memory-50/stdout.log`
 
 판정:

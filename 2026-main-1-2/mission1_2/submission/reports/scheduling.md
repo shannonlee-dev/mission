@@ -6,9 +6,10 @@
 
 ## 2. 증거 자료
 
-원본 증거:
+원본 증거 (재개편 경로):
 
-- `logs/cpu-max-10.log`
+- [submission/evidence/scheduling/round-robin/stdout.log](submission/evidence/scheduling/round-robin/stdout.log)
+- [submission/evidence/scheduling/round-robin/agent_app.log](submission/evidence/scheduling/round-robin/agent_app.log)
 
 로그 발췌:
 
@@ -51,53 +52,3 @@
 - 처리량이 최우선인 배치 작업.
 
 검증 결과: PASS. 로그 순서가 라운드로빈 패턴과 일치한다.
-
-## 부록: 시나리오별 로그 트리거
-
-이 파일은 요청된 로그 문구를 이 저장소에서 관찰된 조건과 매핑합니다.
-
-### OOM (메모리 제한 초과 / 자기 종료)
-
-관찰된 조건:
-- MemoryWorker 힙이 MEMORY_LIMIT에 도달하거나 초과할 때까지 증가함.
-- MemoryGuard가 "Memory limit exceeded"를 기록하고 즉시 프로세스를 자기 종료함.
-
-증거:
-- logs/oom-memory-50.log
-	- [MemoryWorker] Current Heap: 50MB
-	- [MemoryGuard] Memory limit exceeded (50MB >= 50MB)
-	- [MemoryGuard] Self-terminating process ...
-- logs/oom-memory-128.log
-	- [MemoryWorker] Current Heap: 150MB
-	- [MemoryGuard] Memory limit exceeded (150MB >= 128MB)
-	- [MemoryGuard] Self-terminating process ...
-- logs/app-default.log
-	- [MemoryWorker] Current Heap: 275MB
-	- [MemoryGuard] Memory limit exceeded (275MB >= 256MB)
-	- [MemoryGuard] Self-terminating process ...
-
-### CPU (WATCHDOG / SIGTERM)
-
-검색 결과:
-- 이 저장소에서 WATCHDOG 또는 SIGTERM 로그를 찾지 못함.
-
-관찰된 CPU 관련 가장 가까운 동작:
-- CpuWorker가 CPU_MAX_OCCUPY에서 최고치를 찍고 종료 없이 진정됨.
-	- logs/cpu-max-10.log (최고 10% 후 진정)
-	- logs/cpu-max-100.log (최고 40% 후 진정)
-
-WATCHDOG/SIGTERM 경로가 존재하더라도, 해당 로그는 이 작업공간에 없음.
-
-### 교착상태 (WAITING / BLOCKED)
-
-관찰된 조건:
-- MULTI_THREAD_ENABLE=true가 동시 작업자를 활성화함.
-- 두 작업자 스레드가 서로 다른 리소스를 잠근 뒤 서로를 기다림.
-- "Need resource" 메시지 직후 WAITING과 BLOCKED 로그가 나타남.
-
-증거:
-- logs/deadlock-multi-true.log
-	- [AgentWorker] Waiting for worker threads to complete transactions...
-	- [AgentWorker][Worker-Thread-1] WAITING for [Socket_Pool_B]... (Status: BLOCKED)
-	- [AgentWorker][Worker-Thread-2] WAITING for [Shared_Memory_A]... (Status: BLOCKED)
-
