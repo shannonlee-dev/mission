@@ -8,14 +8,10 @@
 
 ## 2. Evidence & Logs (증거 자료)
 
-원본 증거 (재개편 경로):
+원본 증거:
 
-- [submission/evidence/deadlock/multi-true/stdout.log](submission/evidence/deadlock/multi-true/stdout.log)
-- [submission/evidence/deadlock/multi-true/agent_app.log](submission/evidence/deadlock/multi-true/agent_app.log)
-- [submission/evidence/deadlock/multi-true/thread_samples.log](submission/evidence/deadlock/multi-true/thread_samples.log)
-- [submission/evidence/deadlock/multi-false/stdout.log](submission/evidence/deadlock/multi-false/stdout.log)
-- [submission/evidence/deadlock/multi-false/agent_app.log](submission/evidence/deadlock/multi-false/agent_app.log)
-- [submission/evidence/deadlock/multi-false/thread_samples.log](submission/evidence/deadlock/multi-false/thread_samples.log)
+- `logs/deadlock-multi-true.log`
+- `logs/deadlock-multi-false.log`
 
 마지막 블로킹 로그:
 
@@ -48,3 +44,4 @@
 - `MULTI_THREAD_ENABLE=false`: 앱이 `Healthy System Monitoring`을 선택했고 WAITING/BLOCKED 로그 없이 스케줄러 작업이 완료됨.
 
 검증 결과: PASS. true/false 비교로 재현 가능한 데드락과 명확한 회피 경로가 확인됐다.
+
