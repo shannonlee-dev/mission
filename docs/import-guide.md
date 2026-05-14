@@ -1,10 +1,10 @@
 # 레포 import 매뉴얼
 
-`codyssey_mission` 레포를 Codyssey monorepo의 하위 디렉터리로 가져오는 절차입니다.
+`codyssey_mission` 레포를 Codyssey `codyssey_mission`의 하위 디렉터리로 가져오는 절차입니다.
 
 ## 목표
 
-원본 레포의 파일과 히스토리를 유지한 채 Codyssey monorepo의 지정한 하위 경로로 옮깁니다.
+원본 레포의 파일과 히스토리를 유지한 채 Codyssey `codyssey_mission`의 지정한 하위 경로로 옮깁니다.
 
 ```text
 codyssey_mission.git
@@ -22,16 +22,16 @@ main
 import/codyssey_mission-<가져올-경로>/<원본 브랜치>
 ```
 
-원본 `main` 브랜치는 monorepo의 `main`에 merge합니다. 필요하면 보존용 `import/.../main` 브랜치는 push 후 삭제할 수 있습니다.
+원본 `main` 브랜치는 `codyssey_mission`의 `main`에 merge합니다. 필요하면 보존용 `import/.../main` 브랜치는 push 후 삭제할 수 있습니다.
 
 ## 핵심 흐름
 
 ```text
 1. 원본 레포를 mirror clone 한다.
-2. git filter-repo로 모든 파일 경로를 monorepo 하위 경로로 재작성한다.
+2. git filter-repo로 모든 파일 경로를 `codyssey_mission` 하위 경로로 재작성한다.
 3. 원본 브랜치들을 import/<이름>/<브랜치> 형태로 가져온다.
-4. 원본 main 브랜치를 monorepo main에 merge한다.
-5. monorepo main과 import 브랜치들을 GitHub에 push한다.
+4. 원본 main 브랜치를 `codyssey_mission` main에 merge한다.
+5. `codyssey_mission` main과 import 브랜치들을 GitHub에 push한다.
 ```
 
 ## Import 절차
@@ -54,11 +54,11 @@ export REMOTE_NAME=$SOURCE_REPO-$(echo "$TARGET_PATH" | tr '/' '-')
 export URL=https://github.com/shannonlee-dev/codyssey_mission.git
 ```
 
-### 2. monorepo 상태 확인
+### 2. codyssey_mission 상태 확인
 
 ```bash
-git clone https://github.com/shannonlee-dev/Codyssey.git ~/__dev/monorepo 
-cd ~/__dev/monorepo
+git clone https://github.com/shannonlee-dev/Codyssey.git ~/__dev/codyssey_mission
+cd ~/__dev/codyssey_mission
 git switch main
 git status
 ```
@@ -92,10 +92,10 @@ git filter-repo \
 2026-selection-3/
 ```
 
-### 5. monorepo로 가져오기
+### 5. codyssey_mission으로 가져오기
 
 ```bash
-cd ~/__dev/monorepo
+cd ~/__dev/codyssey_mission
 
 git remote add "$REMOTE_NAME" ~/__dev/tmp/mono-imports/$REMOTE_NAME.git
 
@@ -112,7 +112,7 @@ import/codyssey_mission-2026-selection-3/dev
 import/codyssey_mission-2026-selection-3/feature-x
 ```
 
-### 6. 원본 main을 monorepo main에 merge
+### 6. 원본 main을 codyssey_mission main에 merge
 
 ```bash
 git switch main
@@ -137,7 +137,7 @@ git remote remove "$REMOTE_NAME"
 
 ### 8. GitHub에 push
 
-monorepo `main` push:
+`codyssey_mission` `main` push:
 
 ```bash
 git push origin main
