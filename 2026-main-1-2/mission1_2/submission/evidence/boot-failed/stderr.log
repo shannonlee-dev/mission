@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "os_pbl.py", line 827, in <module>
+  File "os_pbl.py", line 203, in check_port_availability
+  File "socket.py", line 233, in __init__
+PermissionError: [Errno 1] Operation not permitted
+[PYI-13:ERROR] Failed to execute script 'os_pbl' due to unhandled exception!
