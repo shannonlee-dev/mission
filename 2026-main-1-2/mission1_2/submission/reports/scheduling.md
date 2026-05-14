@@ -6,10 +6,9 @@
 
 ## 2. 증거 자료
 
-원본 증거 (재개편 경로):
+원본 증거:
 
-- [submission/evidence/scheduling/round-robin/stdout.log](submission/evidence/scheduling/round-robin/stdout.log)
-- [submission/evidence/scheduling/round-robin/agent_app.log](submission/evidence/scheduling/round-robin/agent_app.log)
+- `logs/cpu-max-10.log`
 
 로그 발췌:
 
@@ -52,3 +51,4 @@
 - 처리량이 최우선인 배치 작업.
 
 검증 결과: PASS. 로그 순서가 라운드로빈 패턴과 일치한다.
+

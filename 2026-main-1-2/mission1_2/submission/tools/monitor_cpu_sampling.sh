@@ -7,10 +7,11 @@ MONITOR_SCRIPT="$ROOT_DIR/monitor.sh"
 
 DURATION="${DURATION:-30}"
 INTERVAL="${INTERVAL:-1}"
-OUT_DIR="${OUT_DIR:-$ROOT_DIR/evidence/cpu/spike}"
-OUT_FILE="${OUT_FILE:-$OUT_DIR/monitor_cpu.log}"
+OUT_DIR="$ROOT_DIR/evidence/cpu/spike"
+OUT_FILE="$OUT_DIR/monitor_cpu.log"
 
 mkdir -p "$OUT_DIR"
+: > "$OUT_FILE"
 
 count="$(python3 - <<'PY'
 import math
