@@ -41,6 +41,16 @@ def validate_amount(value: str | int) -> int:
     return amount
 
 
+def validate_positive_int(value: str | int, name: str) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError) as exc:
+        raise AppError(f"{name}은 양수 정수여야 합니다.", "1 이상의 정수를 입력하세요.") from exc
+    if number <= 0:
+        raise AppError(f"{name}은 0보다 커야 합니다.", "1 이상의 정수를 입력하세요.")
+    return number
+
+
 def validate_day(value: str | int) -> int:
     try:
         day = int(value)

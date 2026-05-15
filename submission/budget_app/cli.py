@@ -6,6 +6,7 @@ from pathlib import Path
 from .decorators import handle_cli_errors
 from .formatters import money, print_transactions
 from .services import BudgetService, prompt_transaction
+from .validators import validate_positive_int
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -92,7 +93,7 @@ def run(args: argparse.Namespace) -> int:
         return 0
 
     if args.command == "list":
-        print_transactions(service.list_transactions(args.limit))
+        print_transactions(service.list_transactions(validate_positive_int(args.limit, "limit")))
         return 0
 
     if args.command == "search":
@@ -110,7 +111,8 @@ def run(args: argparse.Namespace) -> int:
         return 0
 
     if args.command == "summary":
-        result = service.summary(args.month, args.top)
+        top = validate_positive_int(args.top, "top")
+        result = service.summary(args.month, top)
         if result["sample_count"] == 0:
             print("데이터 없음")
             return 0
@@ -122,7 +124,7 @@ def run(args: argparse.Namespace) -> int:
             if result["over_budget"]:
                 print("[WARNING] 예산을 초과했습니다.")
         print("")
-        print(f"지출 TOP {args.top}")
+        print(f"지출 TOP {top}")
         for idx, (category, amount) in enumerate(result["top"], start=1):
             print(f"{idx}. {category} {money(amount)}")
         return 0
