@@ -7,12 +7,11 @@ import tempfile
 from collections.abc import Callable, Iterable, Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any
 
 from .errors import AppError
 from .models import Budget, RecurringRule, Transaction
 
-T = TypeVar("T")
 
 DEFAULT_CATEGORIES = [
     "food",
