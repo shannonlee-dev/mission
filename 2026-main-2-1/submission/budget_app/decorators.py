@@ -9,7 +9,6 @@ from typing import ParamSpec, TypeVar
 from .errors import AppError
 
 P = ParamSpec("P")
-R = TypeVar("R")
 
 
 def handle_cli_errors(func: Callable[P, int]) -> Callable[P, int]:
