@@ -143,7 +143,8 @@ class BudgetService:
 
     def remove_category(self, name: str) -> bool:
         name = name.strip()
-        if any(tx.category == name for tx in self.transactions.iter_all()):
+        transactions = list(self.transactions.iter_all())
+        if any(tx.category == name for tx in transactions):
             raise AppError("사용 중인 카테고리는 삭제할 수 없습니다.", "거래를 다른 카테고리로 수정한 뒤 삭제하세요.")
         return self.store.remove_category(name)
 

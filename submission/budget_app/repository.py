@@ -7,7 +7,7 @@ import tempfile
 from collections.abc import Callable, Iterable, Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar
 
 from .errors import AppError
 from .models import Budget, RecurringRule, Transaction
@@ -24,6 +24,8 @@ DEFAULT_CATEGORIES = [
     "entertainment",
     "etc",
 ]
+
+T = TypeVar("T")
 
 
 class JsonlStore:
@@ -46,7 +48,7 @@ class JsonlStore:
         if self.categories_path.stat().st_size == 0:
             self.write_categories(DEFAULT_CATEGORIES)
 
-    def _read_jsonl(self, path: Path) -> Iterator[dict[str, Any]]:
+    def _read_jsonl_rows(self, path: Path) -> Iterator[tuple[int, dict[str, Any]]]:
         self.ensure()
         with path.open("r", encoding="utf-8") as handle:
             for line_no, line in enumerate(handle, start=1):
@@ -60,8 +62,26 @@ class JsonlStore:
                         f"저장 파일을 읽을 수 없습니다: {path.name}:{line_no}",
                         "파일 형식이 JSONL인지 확인하세요.",
                     ) from exc
-                if isinstance(data, dict):
-                    yield data
+                if not isinstance(data, dict):
+                    raise AppError(
+                        f"저장 파일 행이 올바르지 않습니다: {path.name}:{line_no}",
+                        "각 줄은 JSON 객체여야 합니다.",
+                    )
+                yield line_no, data
+
+    def _read_jsonl(self, path: Path) -> Iterator[dict[str, Any]]:
+        for _, row in self._read_jsonl_rows(path):
+            yield row
+
+    def _read_models(self, path: Path, factory: Callable[[dict[str, Any]], T], label: str) -> Iterator[T]:
+        for line_no, row in self._read_jsonl_rows(path):
+            try:
+                yield factory(row)
+            except (KeyError, TypeError, ValueError) as exc:
+                raise AppError(
+                    f"저장 파일 행이 올바르지 않습니다: {path.name}:{line_no}",
+                    f"{label} 필드와 값 형식을 확인하세요.",
+                ) from exc
 
     def _append_jsonl(self, path: Path, row: dict[str, Any]) -> None:
         self.ensure()
@@ -81,8 +101,7 @@ class JsonlStore:
                 os.unlink(temp_name)
 
     def iter_transactions(self) -> Iterator[Transaction]:
-        for row in self._read_jsonl(self.transactions_path):
-            yield Transaction.from_dict(row)
+        yield from self._read_models(self.transactions_path, Transaction.from_dict, "거래")
 
     def add_transaction(self, tx: Transaction) -> None:
         self._append_jsonl(self.transactions_path, tx.to_dict())
@@ -91,7 +110,8 @@ class JsonlStore:
         self._rewrite_jsonl(self.transactions_path, (tx.to_dict() for tx in rows))
 
     def get_transaction(self, tx_id: str) -> Transaction | None:
-        for tx in self.iter_transactions():
+        transactions = list(self.iter_transactions())
+        for tx in transactions:
             if tx.id == tx_id:
                 return tx
         return None
@@ -138,8 +158,7 @@ class JsonlStore:
         return True
 
     def iter_budgets(self) -> Iterator[Budget]:
-        for row in self._read_jsonl(self.budgets_path):
-            yield Budget.from_dict(row)
+        yield from self._read_models(self.budgets_path, Budget.from_dict, "예산")
 
     def set_budget(self, month: str, amount: int) -> None:
         seen = False
@@ -155,14 +174,14 @@ class JsonlStore:
         self._rewrite_jsonl(self.budgets_path, (budget.to_dict() for budget in budgets))
 
     def get_budget(self, month: str) -> Budget | None:
-        for budget in self.iter_budgets():
+        budgets = list(self.iter_budgets())
+        for budget in budgets:
             if budget.month == month:
                 return budget
         return None
 
     def iter_recurring(self) -> Iterator[RecurringRule]:
-        for row in self._read_jsonl(self.recurring_path):
-            yield RecurringRule.from_dict(row)
+        yield from self._read_models(self.recurring_path, RecurringRule.from_dict, "반복 내역")
 
     def next_recurring_id(self) -> str:
         max_number = 0
@@ -177,8 +196,15 @@ class JsonlStore:
     def add_recurring(self, rule: RecurringRule) -> None:
         self._append_jsonl(self.recurring_path, rule.to_dict())
 
+    def validate_all(self) -> None:
+        list(self.iter_transactions())
+        self.categories()
+        list(self.iter_budgets())
+        list(self.iter_recurring())
+
     def backup(self) -> Path:
         self.ensure()
+        self.validate_all()
         stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
         target = self.data_dir / "backups" / f"budget_backup_{stamp}"
         target.mkdir(parents=True, exist_ok=False)
