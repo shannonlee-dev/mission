@@ -14,6 +14,22 @@ python3 submission/mini_redis.py
 
 ## 명령별 예시와 내부 흐름
 
+### 명령 분기 요약 (execute_line)
+
+- `EXIT`, `QUIT`
+- `SET key value` 
+- `GET key` 
+- `DEL key` 
+- `EXISTS key` 
+- `DBSIZE`
+- `KEYS` 
+- `CONFIG SET maxmemory value`
+- `INFO memory` 
+- `EXPIRE key seconds`
+- `TTL key`
+- `PUBLISH channel message`
+- `SUBSCRIBE channel`
+
 ### SET name sisi
 
 ```bash
@@ -188,6 +204,14 @@ printf 'quit\n' | python3 submission/mini_redis.py
 ```
 
 - cli.py → `execute_line("quit")`
+- cli.py → "__QUIT__" 반환
+- cli.py → REPL 루프 종료
+
+```bash
+printf 'exit\n' | python3 submission/mini_redis.py
+```
+
+- cli.py → `execute_line("exit")`
 - cli.py → "__QUIT__" 반환
 - cli.py → REPL 루프 종료
 
