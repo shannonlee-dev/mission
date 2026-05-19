@@ -7,7 +7,6 @@
 ```text
 2026-main-1-1/
 ├── 98_PROCEDURE_MANUAL.md
-├── 99_HUMAN_REPORT.md
 ├── runtime/
 └── submission/
 ```
@@ -17,7 +16,6 @@
 | Path | Summary |
 | --- | --- |
 | `98_PROCEDURE_MANUAL.md` | 수행 절차와 운영 기준 문서 |
-| `99_HUMAN_REPORT.md` | 사람이 읽는 최종 보고 문서 |
 | `submission/` | 제출용 문서와 요구사항 실행 보고서 |
 | `runtime/` | 실행 중 생성된 로그와 완료 기록 |
 
@@ -25,7 +23,6 @@
 
 ```bash
 cd 2026-main-1-1
-sed -n '1,160p' 99_HUMAN_REPORT.md
 ```
 
 ## Notes
