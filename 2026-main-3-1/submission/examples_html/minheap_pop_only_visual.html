@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MinHeap POP Only</title>
+<style>
+  :root{
+    --bg:#0e1118; --panel:#171b25; --panel2:#222838; --text:#f3f6ff; --muted:#8f9ab5;
+    --line:#59627a; --root:#fde68a; --last:#93c5fd; --swap:#c4b5fd; --ok:#86efac;
+    --node:#2b3145; --gone:#fca5a5; --pick:#67e8f9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(circle at top,#202536,#0e1118 58%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,sans-serif}
+  header{padding:16px 18px 6px;text-align:center}
+  h1{font-size:22px;margin:0}
+  main{display:grid;grid-template-columns:270px 1fr;gap:14px;max-width:1120px;margin:auto;padding:12px 16px 20px}
+  .panel{background:rgba(23,27,37,.92);border:1px solid #2a3042;border-radius:18px;box-shadow:0 18px 55px rgba(0,0,0,.28)}
+  .controls{padding:14px}
+  .label{font-size:12px;color:var(--muted);margin:10px 0 6px}
+  button{width:100%;border:0;border-radius:13px;padding:11px 10px;margin:5px 0;background:#293149;color:var(--text);font-weight:850;cursor:pointer;transition:.16s transform,.16s background}
+  button:hover{transform:translateY(-1px);background:#35405e}
+  button.active{background:#53628d;outline:2px solid var(--pick)}
+  button.primary{background:#2e6f83}
+  button.primary:hover{background:#38859b}
+  input{width:100%}
+  .stage{padding:14px;min-height:690px;overflow:hidden}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px}
+  .pill{font-size:11px;color:#dce4ff;background:#22283a;border:1px solid #343b52;border-radius:999px;padding:5px 9px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+  .title{text-align:center;font-size:17px;font-weight:950;margin:2px 0 10px}
+  .tree{height:420px;position:relative;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));border:1px solid #272d3f}
+  svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .edge{stroke:var(--line);stroke-width:3;opacity:.65}
+  .edge.hot{stroke:var(--swap);stroke-width:5;opacity:1}
+  .node{position:absolute;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--node);
+    border:3px solid #58617d;color:white;font-size:20px;font-weight:950;box-shadow:0 10px 24px rgba(0,0,0,.36);
+    transition:all .55s cubic-bezier(.2,.8,.2,1),opacity .35s}
+  .node small{display:block;font-size:10px;color:#cbd5e1;line-height:1.05}
+  .node .inner{text-align:center;line-height:1.05}
+  .node.root{border-color:var(--root);background:#4a3d21;box-shadow:0 0 0 7px rgba(253,230,138,.13),0 10px 24px rgba(0,0,0,.36)}
+  .node.last{border-color:var(--last);background:#273b5e}
+  .node.pick{border-color:var(--pick);box-shadow:0 0 0 7px rgba(103,232,249,.13),0 10px 24px rgba(0,0,0,.36)}
+  .node.swap{border-color:var(--swap);background:#3a2d5f;animation:pulse .72s infinite alternate}
+  .node.gone{border-color:var(--gone);background:#532c31;opacity:.38;transform:scale(.78)}
+  .node.ok{border-color:var(--ok);background:#20472d}
+  @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.07)}}
+  .array{display:flex;justify-content:center;gap:7px;margin:14px 0 8px;flex-wrap:wrap}
+  .cell{min-width:52px;padding:8px 7px;border-radius:12px;background:#22283a;border:2px solid #3b435a;text-align:center;font-weight:900;transition:.35s}
+  .cell .idx{display:block;font-size:9px;color:var(--muted);font-weight:700;margin-top:2px}
+  .cell.root{border-color:var(--root);background:#4a3d21}
+  .cell.last{border-color:var(--last);background:#273b5e}
+  .cell.swap{border-color:var(--swap);background:#3a2d5f}
+  .cell.ok{border-color:var(--ok);background:#20472d}
+  .strip{display:grid;grid-template-columns:1fr 58px 1fr;gap:10px;align-items:center;max-width:520px;margin:12px auto}
+  .box{background:#202638;border:2px solid #3b435a;border-radius:15px;padding:12px;text-align:center;font-weight:950;min-height:48px}
+  .box.hot{border-color:var(--pick)}
+  .sign{text-align:center;font-size:28px;font-weight:950;color:var(--root)}
+  .caption{min-height:66px;margin:10px auto 0;max-width:720px;text-align:center;background:#111521;border:1px solid #2d344b;border-radius:16px;padding:12px}
+  .big{font-size:25px;font-weight:1000;letter-spacing:.02em}
+  .mini{font-size:12px;color:var(--muted);margin-top:4px}
+  @media(max-width:820px){main{grid-template-columns:1fr}.tree{height:360px}.node{width:60px;height:60px;font-size:17px}.stage{min-height:630px}}
+</style>
+</head>
+<body>
+<header><h1>MinHeap POP</h1></header>
+
+<main>
+  <aside class="panel controls">
+    <div class="label">cases</div>
+    <button data-case="one">1 node</button>
+    <button data-case="left">left only</button>
+    <button data-case="leftSmall">2 children · L</button>
+    <button data-case="rightSmall">2 children · R</button>
+    <button data-case="stop">no swap</button>
+    <button data-case="multi">multi swap</button>
+
+    <div class="label">play</div>
+    <button id="play" class="primary">▶</button>
+    <button id="step">step</button>
+
+    <div class="label">speed</div>
+    <input id="speed" type="range" min="430" max="1300" value="820"/>
+
+    <div class="label">pop flow</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.8">
+      ① root out<br>
+      ② last → root<br>
+      ③ down<br>
+      ④ done
+    </div>
+  </aside>
+
+  <section class="panel stage">
+    <div class="legend">
+      <span class="pill"><span class="dot" style="background:var(--root)"></span>root</span>
+      <span class="pill"><span class="dot" style="background:var(--last)"></span>last</span>
+      <span class="pill"><span class="dot" style="background:var(--pick)"></span>pick</span>
+      <span class="pill"><span class="dot" style="background:var(--swap)"></span>swap</span>
+    </div>
+
+    <div class="title" id="caseTitle"></div>
+
+    <div class="tree" id="tree">
+      <svg id="edges"></svg>
+      <div id="nodes"></div>
+    </div>
+
+    <div class="array" id="array"></div>
+
+    <div class="strip">
+      <div class="box" id="leftBox">-</div>
+      <div class="sign" id="sign">·</div>
+      <div class="box" id="rightBox">-</div>
+    </div>
+
+    <div class="caption">
+      <div class="big" id="big">POP</div>
+      <div class="mini" id="mini"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const pos = [
+  [50,12], [28,34], [72,34], [17,60], [39,60], [61,60], [83,60], [11,83], [23,83], [33,83], [45,83]
+];
+
+const cases = {
+  one:{
+    title:"1 node",
+    arr:[3],
+    steps:[
+      {tag:"root out", sub:"pop = 3", arr:[3], root:[0], gone:[0], cmp:["3","out",""]},
+      {tag:"done", sub:"empty", arr:[], ok:[], cmp:["[]","✓",""]}
+    ]
+  },
+  left:{
+    title:"left only",
+    arr:[8,5],
+    steps:[
+      {tag:"root out", sub:"pop = 8", arr:[8,5], root:[0], last:[1], gone:[0], cmp:["8","out",""]},
+      {tag:"last → root", sub:"5 moves up", arr:[5], root:[0], cmp:["5","→","root"]},
+      {tag:"done", sub:"no child", arr:[5], ok:[0], cmp:["5","✓",""]}
+    ]
+  },
+  leftSmall:{
+    title:"2 children · L",
+    arr:[9,4,7,12],
+    steps:[
+      {tag:"root out", sub:"pop = 9", arr:[9,4,7,12], root:[0], last:[3], gone:[0], cmp:["9","out",""]},
+      {tag:"last → root", sub:"12 at root", arr:[12,4,7], root:[0], cmp:["12","↓","?"]},
+      {tag:"pick child", sub:"min(4,7)=4", arr:[12,4,7], root:[0], pick:[1], child:[1,2], cmp:["4","<","7"]},
+      {tag:"swap", sub:"12 ↔ 4", arr:[12,4,7], swap:[0,1], edge:[[0,1]], cmp:["12","↔","4"]},
+      {tag:"done", sub:"", arr:[4,12,7], ok:[0,1,2], cmp:["4","✓",""]}
+    ]
+  },
+  rightSmall:{
+    title:"2 children · R",
+    arr:[9,7,4,12],
+    steps:[
+      {tag:"root out", sub:"pop = 9", arr:[9,7,4,12], root:[0], last:[3], gone:[0], cmp:["9","out",""]},
+      {tag:"last → root", sub:"12 at root", arr:[12,7,4], root:[0], cmp:["12","↓","?"]},
+      {tag:"pick child", sub:"min(7,4)=4", arr:[12,7,4], root:[0], pick:[2], child:[1,2], cmp:["4","<","7"]},
+      {tag:"swap", sub:"12 ↔ 4", arr:[12,7,4], swap:[0,2], edge:[[0,2]], cmp:["12","↔","4"]},
+      {tag:"done", sub:"", arr:[4,7,12], ok:[0,1,2], cmp:["4","✓",""]}
+    ]
+  },
+  stop:{
+    title:"no swap",
+    arr:[3,7,5,10],
+    steps:[
+      {tag:"root out", sub:"pop = 3", arr:[3,7,5,10], root:[0], last:[3], gone:[0], cmp:["3","out",""]},
+      {tag:"last → root", sub:"10 at root", arr:[10,7,5], root:[0], cmp:["10","↓","?"]},
+      {tag:"pick child", sub:"min(7,5)=5", arr:[10,7,5], root:[0], pick:[2], child:[1,2], cmp:["5","<","7"]},
+      {tag:"swap", sub:"10 ↔ 5", arr:[10,7,5], swap:[0,2], edge:[[0,2]], cmp:["10","↔","5"]},
+      {tag:"done", sub:"", arr:[5,7,10], ok:[0,1,2], cmp:["5","✓",""]}
+    ]
+  },
+  multi:{
+    title:"multi swap",
+    arr:[2,4,5,8,9,6,7,13],
+    steps:[
+      {tag:"root out", sub:"pop = 2", arr:[2,4,5,8,9,6,7,13], root:[0], last:[7], gone:[0], cmp:["2","out",""]},
+      {tag:"last → root", sub:"13 at root", arr:[13,4,5,8,9,6,7], root:[0], cmp:["13","↓","?"]},
+      {tag:"pick child", sub:"min(4,5)=4", arr:[13,4,5,8,9,6,7], root:[0], pick:[1], child:[1,2], cmp:["4","<","5"]},
+      {tag:"swap", sub:"13 ↔ 4", arr:[13,4,5,8,9,6,7], swap:[0,1], edge:[[0,1]], cmp:["13","↔","4"]},
+      {tag:"down", sub:"13 now here", arr:[4,13,5,8,9,6,7], root:[1], child:[3,4], cmp:["13","vs","8 / 9"]},
+      {tag:"pick child", sub:"min(8,9)=8", arr:[4,13,5,8,9,6,7], root:[1], pick:[3], child:[3,4], cmp:["8","<","9"]},
+      {tag:"swap", sub:"13 ↔ 8", arr:[4,13,5,8,9,6,7], swap:[1,3], edge:[[1,3]], cmp:["13","↔","8"]},
+      {tag:"done", sub:"", arr:[4,8,5,13,9,6,7], ok:[0,1,2,3,4,5,6], cmp:["done","✓",""]}
+    ]
+  }
+};
+
+let cur="leftSmall", idx=0, timer=null;
+
+const nodes=document.getElementById("nodes"), edges=document.getElementById("edges"), array=document.getElementById("array");
+const title=document.getElementById("caseTitle"), big=document.getElementById("big"), mini=document.getElementById("mini");
+const leftBox=document.getElementById("leftBox"), rightBox=document.getElementById("rightBox"), sign=document.getElementById("sign");
+const speed=document.getElementById("speed");
+
+function hasEdge(step,a,b){
+  return (step.edge||[]).some(e => (e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a));
+}
+function draw(step){
+  const arr=step.arr;
+  title.textContent=cases[cur].title;
+  nodes.innerHTML=""; edges.innerHTML=""; array.innerHTML="";
+  for(let i=0;i<arr.length;i++){
+    for(const j of [2*i+1,2*i+2]){
+      if(j<arr.length) drawEdge(i,j,hasEdge(step,i,j));
+    }
+  }
+  for(let i=0;i<arr.length;i++){
+    const [x,y]=pos[i]||[50,86];
+    const n=document.createElement("div");
+    n.className="node";
+    if((step.root||[]).includes(i)) n.classList.add("root");
+    if((step.last||[]).includes(i)) n.classList.add("last");
+    if((step.pick||[]).includes(i)) n.classList.add("pick");
+    if((step.swap||[]).includes(i)) n.classList.add("swap");
+    if((step.gone||[]).includes(i)) n.classList.add("gone");
+    if((step.ok||[]).includes(i)) n.classList.add("ok");
+    n.style.left=`calc(${x}% - 36px)`;
+    n.style.top=`calc(${y}% - 36px)`;
+    n.innerHTML=`<div class="inner">${arr[i]}<small>${i}</small></div>`;
+    nodes.appendChild(n);
+  }
+  for(let i=0;i<arr.length;i++){
+    const c=document.createElement("div");
+    c.className="cell";
+    if((step.root||[]).includes(i)) c.classList.add("root");
+    if((step.last||[]).includes(i)) c.classList.add("last");
+    if((step.swap||[]).includes(i)) c.classList.add("swap");
+    if((step.ok||[]).includes(i)) c.classList.add("ok");
+    c.innerHTML=`${arr[i]}<span class="idx">${i}</span>`;
+    array.appendChild(c);
+  }
+  big.textContent=step.tag;
+  mini.textContent=step.sub || "";
+  leftBox.textContent=step.cmp?.[0] ?? "-";
+  sign.textContent=step.cmp?.[1] ?? "·";
+  rightBox.textContent=step.cmp?.[2] ?? "-";
+  leftBox.className="box hot"; rightBox.className="box hot";
+}
+function drawEdge(i,j,hot){
+  const [x1,y1]=pos[i], [x2,y2]=pos[j];
+  const line=document.createElementNS("http://www.w3.org/2000/svg","line");
+  line.setAttribute("x1",x1+"%"); line.setAttribute("y1",y1+"%");
+  line.setAttribute("x2",x2+"%"); line.setAttribute("y2",y2+"%");
+  line.setAttribute("class",hot?"edge hot":"edge");
+  edges.appendChild(line);
+}
+function setCase(c){
+  cur=c; idx=0; clearInterval(timer); timer=null;
+  document.querySelectorAll("[data-case]").forEach(b=>b.classList.toggle("active",b.dataset.case===c));
+  draw(cases[cur].steps[0]);
+}
+function next(){
+  const steps=cases[cur].steps;
+  draw(steps[idx]);
+  idx++;
+  if(idx>=steps.length){ clearInterval(timer); timer=null; idx=0; }
+}
+function play(){
+  clearInterval(timer); idx=0;
+  next();
+  timer=setInterval(next, Number(speed.value));
+}
+document.querySelectorAll("[data-case]").forEach(b=>b.onclick=()=>setCase(b.dataset.case));
+document.getElementById("play").onclick=play;
+document.getElementById("step").onclick=()=>{
+  const steps=cases[cur].steps;
+  draw(steps[idx]);
+  idx=(idx+1)%steps.length;
+};
+setCase(cur);
+</script>
+</body>
+</html>
