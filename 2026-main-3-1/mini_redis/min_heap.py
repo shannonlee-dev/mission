@@ -1,30 +1,35 @@
-class HeapItem:
-    """Comparable heap item used for TTL expiration records."""
+from __future__ import annotations
 
-    def __init__(self, expire_at, key):
+from typing import List, Optional
+
+
+class HeapItem:
+    """TTL 만료 기록에 사용하는 비교 가능한 힙 항목."""
+
+    def __init__(self, expire_at: float, key: str) -> None:
         self.expire_at = expire_at
         self.key = key
 
-    def less_than(self, other):
+    def less_than(self, other: "HeapItem") -> bool:
         if self.expire_at == other.expire_at:
             return self.key < other.key
         return self.expire_at < other.expire_at
 
 
 class MinHeap:
-    """Array-backed minimum heap with explicit heapify operations."""
+    """명시적인 힙 정렬 연산을 사용하는 배열 기반 최소 힙."""
 
-    def __init__(self):
-        self._items = []
+    def __init__(self) -> None:
+        self._items: List[HeapItem] = []
 
-    def size(self):
+    def size(self) -> int:
         return len(self._items)
 
-    def push(self, item):
+    def push(self, item: HeapItem) -> None:
         self._items.append(item)
         self._heapify_up(len(self._items) - 1)
 
-    def pop(self):
+    def pop(self) -> Optional[HeapItem]:
         if not self._items:
             return None
         minimum = self._items[0]
@@ -34,12 +39,12 @@ class MinHeap:
             self._heapify_down(0)
         return minimum
 
-    def peek(self):
+    def peek(self) -> Optional[HeapItem]:
         if not self._items:
             return None
         return self._items[0]
 
-    def _heapify_up(self, index):
+    def _heapify_up(self, index: int) -> None:
         while index > 0:
             parent = (index - 1) // 2
             if not self._items[index].less_than(self._items[parent]):
@@ -47,7 +52,7 @@ class MinHeap:
             self._swap(index, parent)
             index = parent
 
-    def _heapify_down(self, index):
+    def _heapify_down(self, index: int) -> None:
         size = len(self._items)
         while True:
             left = index * 2 + 1
@@ -62,6 +67,5 @@ class MinHeap:
             self._swap(index, smallest)
             index = smallest
 
-    def _swap(self, left, right):
+    def _swap(self, left: int, right: int) -> None:
         self._items[left], self._items[right] = self._items[right], self._items[left]
-

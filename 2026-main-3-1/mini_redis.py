@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Executable entry point for the Mini Redis CLI."""
+"""Mini Redis CLI 실행 진입점."""
 
 from mini_redis.cli import MiniRedisCLI
 
 
-def main():
+def main() -> None:
     MiniRedisCLI().run()
 
 
