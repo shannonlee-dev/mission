@@ -2,7 +2,7 @@
 
 ## 1. Description (현상 설명)
 
-`agent-app-leak`는 non-root 사용자 `maincodex`로 실행했고, 필요한 `AGENT_HOME`, 키 파일, 로그 디렉터리, 고정 포트 `15034`를 제공했다. OOM 케이스에서는 프로세스가 정상적으로 시작한 뒤 메모리 워커가 힙 사용량을 증가시켜 구성된 `MEMORY_LIMIT`에 도달했다.
+`agent-app-leak`는 non-root 사용자로 실행했고, 필요한 `AGENT_HOME`, 키 파일, 로그 디렉터리, 고정 포트 `15034`를 제공했다. OOM 케이스에서는 프로세스가 정상적으로 시작한 뒤 메모리 워커가 힙 사용량을 증가시켜 구성된 `MEMORY_LIMIT`에 도달했다.
 
 두 번의 실행을 비교했다:
 
@@ -15,19 +15,21 @@
 
 원본 증거:
 
-- `logs/oom-memory-50.log`
-- `logs/oom-memory-128.log`
+- `submission/evidence/oom/memory-50/stdout.log`
+- `submission/evidence/oom/memory-50/agent_app.log`
+- `submission/evidence/oom/memory-128/stdout.log`
+- `submission/evidence/oom/memory-128/agent_app.log`
 
 MemoryWorker 로그에서 힙 증가가 확인됐다:
 
 ```text
 memory-50:
-2026-05-13 18:33:05,055 [INFO] [MemoryWorker] Current Heap: 25MB
-2026-05-13 18:33:08,063 [INFO] [MemoryWorker] Current Heap: 50MB
+2026-05-19 13:42:04,677 [INFO] [MemoryWorker] Current Heap: 25MB
+2026-05-19 13:42:07,690 [INFO] [MemoryWorker] Current Heap: 50MB
 
 memory-128:
-2026-05-13 18:33:24,109 [INFO] [MemoryWorker] Current Heap: 25MB
-2026-05-13 18:33:39,311 [INFO] [MemoryWorker] Current Heap: 150MB
+2026-05-19 13:42:10,590 [INFO] [MemoryWorker] Current Heap: 25MB
+2026-05-19 13:42:25,753 [INFO] [MemoryWorker] Current Heap: 150MB
 ```
 
 MemoryGuard 종료 로그:
@@ -35,11 +37,11 @@ MemoryGuard 종료 로그:
 ```text
 MEMORY_LIMIT=50:
 [MemoryGuard] Memory limit exceeded (50MB >= 50MB)
-[MemoryGuard] Self-terminating process 31219 to prevent system instability.
+[MemoryGuard] Self-terminating process 12052 to prevent system instability.
 
 MEMORY_LIMIT=128:
 [MemoryGuard] Memory limit exceeded (150MB >= 128MB)
-[MemoryGuard] Self-terminating process 31363 to prevent system instability.
+[MemoryGuard] Self-terminating process 12222 to prevent system instability.
 ```
 
 ## 3. Root Cause Analysis (원인 분석)
@@ -61,4 +63,3 @@ MEMORY_LIMIT=128:
 - `MEMORY_LIMIT=128`: 모니터 샘플 7개, MemoryGuard가 `150MB >= 128MB`에서 종료.
 
 검증 결과: PASS. 더 높은 한계가 종료를 지연시켜 더 많은 힙 증가를 관측했지만, 동일한 MemoryGuard 정책이 프로세스를 여전히 중지시켰다.
-
