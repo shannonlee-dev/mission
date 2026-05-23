@@ -3,6 +3,19 @@
 from __future__ import annotations
 
 
+GREEN = "\033[32m"
+RED = "\033[31m"
+RESET = "\033[0m"
+
+
+def _green(text: str) -> str:
+    return f"{GREEN}{text}{RESET}"
+
+
+def _red(text: str) -> str:
+    return f"{RED}{text}{RESET}"
+
+
 def render_line_diff(left: list[str], right: list[str]) -> list[str]:
     """Render a simple LCS-based line diff."""
     rows = len(left) + 1
@@ -33,15 +46,15 @@ def render_line_diff(left: list[str], right: list[str]) -> list[str]:
             i += 1
             j += 1
         elif table[i + 1][j] >= table[i][j + 1]:
-            lines.append(f"- {left[i]}")
+            lines.append(_red(f"- {left[i]}"))
             i += 1
         else:
-            lines.append(f"+ {right[j]}")
+            lines.append(_green(f"+ {right[j]}"))
             j += 1
     while i < len(left):
-        lines.append(f"- {left[i]}")
+        lines.append(_red(f"- {left[i]}"))
         i += 1
     while j < len(right):
-        lines.append(f"+ {right[j]}")
+        lines.append(_green(f"+ {right[j]}"))
         j += 1
     return lines
