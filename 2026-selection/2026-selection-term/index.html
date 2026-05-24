@@ -1,0 +1,4416 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinate Debugger</title>
+    <style>
+      :root {
+        --bg-1: #f6efe7;
+        --bg-2: #d7e7f5;
+        --ink: #1c2430;
+        --accent: #ff6b35;
+        --accent-soft: #ffd9cc;
+        --blue-deep: #143a52;
+        --blue-soft: #d6e7f2;
+        --paper: #fffaf4;
+        --panel: rgba(255, 255, 255, 0.82);
+        --grid: rgba(28, 36, 48, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "SF Mono", "Menlo", "Consolas", monospace;
+        color: var(--ink);
+        background:
+          linear-gradient(135deg, var(--bg-1), var(--bg-2)),
+          repeating-linear-gradient(
+            0deg,
+            transparent 0,
+            transparent 31px,
+            var(--grid) 32px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent 31px,
+            var(--grid) 32px
+          );
+        overflow: hidden;
+      }
+
+      .deck {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 40px;
+      }
+
+      .slide-stage {
+        position: relative;
+        width: 1600px;
+        height: 900px;
+        transform-origin: center;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-radius: 32px;
+        background:
+          radial-gradient(circle at top right, rgba(255, 255, 255, 0.9), transparent 30%),
+          linear-gradient(135deg, #fffaf3 0%, #f8efe5 42%, #dde9f2 100%);
+        box-shadow:
+          0 42px 90px rgba(28, 36, 48, 0.18),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 220ms ease;
+      }
+
+      .slide.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .slide::before {
+        content: "";
+        position: absolute;
+        inset: 28px;
+        border: 1px solid rgba(20, 58, 82, 0.1);
+        border-radius: 24px;
+        pointer-events: none;
+      }
+
+      .hero-orb {
+        position: absolute;
+        border-radius: 999px;
+        filter: blur(2px);
+      }
+
+      .hero-orb.one {
+        left: 1068px;
+        top: 96px;
+        width: 328px;
+        height: 328px;
+        background: radial-gradient(circle at 30% 30%, #ffcfbb, #ff6b35 72%, #d24a19 100%);
+        opacity: 0.9;
+      }
+
+      .hero-orb.two {
+        left: 1192px;
+        top: 308px;
+        width: 204px;
+        height: 204px;
+        background: radial-gradient(circle at 35% 35%, #fdf1db, #f7c98d 74%, #dd9d4e 100%);
+        opacity: 0.95;
+      }
+
+      .hero-grid {
+        position: absolute;
+        left: 980px;
+        top: 118px;
+        width: 412px;
+        height: 472px;
+        border-radius: 28px;
+        background:
+          linear-gradient(rgba(20, 58, 82, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(20, 58, 82, 0.06) 1px, transparent 1px);
+        background-size: 32px 32px;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .content {
+        position: absolute;
+        left: 112px;
+        top: 42px;
+        width: 756px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(20, 58, 82, 0.1);
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 6px rgba(255, 107, 53, 0.16);
+      }
+
+      .content h1 {
+        margin: 28px 0 18px;
+        font-family: "Arial", sans-serif;
+        font-size: 92px;
+        line-height: 0.96;
+        letter-spacing: -0.05em;
+      }
+
+      .content .subtitle {
+        max-width: 688px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 28px;
+        line-height: 1.5;
+        color: rgba(28, 36, 48, 0.88);
+      }
+
+      .meta-row {
+        display: flex;
+        gap: 18px;
+        margin-top: 42px;
+      }
+
+      .meta-card {
+        flex: 1;
+        min-height: 136px;
+        padding: 22px 24px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(20, 58, 82, 0.1);
+        box-shadow: 0 16px 36px rgba(28, 36, 48, 0.06);
+      }
+
+      .meta-card .label {
+        display: block;
+        margin-bottom: 14px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        opacity: 0.6;
+      }
+
+      .meta-card strong {
+        display: block;
+        font-family: "Arial", sans-serif;
+        font-size: 26px;
+        line-height: 1.2;
+      }
+
+      .meta-card p {
+        margin: 8px 0 0;
+        font-size: 15px;
+        line-height: 1.5;
+        opacity: 0.72;
+      }
+
+      .hero-card {
+        position: absolute;
+        right: 112px;
+        bottom: 104px;
+        width: 420px;
+        padding: 30px 32px;
+        border-radius: 28px;
+        color: #f7fbff;
+        background: linear-gradient(160deg, rgba(20, 58, 82, 0.96), rgba(33, 88, 120, 0.94));
+        box-shadow: 0 26px 50px rgba(20, 58, 82, 0.25);
+      }
+
+      .hero-card-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        opacity: 0.7;
+      }
+
+      .hero-card h3 {
+        margin: 14px 0 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 30px;
+        line-height: 1.2;
+      }
+
+      .hero-card p {
+        margin: 0 0 24px;
+        font-size: 16px;
+        line-height: 1.6;
+        opacity: 0.82;
+      }
+
+      .hero-stat {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.16);
+      }
+
+      .hero-stat strong {
+        font-family: "Arial", sans-serif;
+        font-size: 56px;
+        line-height: 1;
+      }
+
+      .hero-stat span {
+        font-size: 15px;
+        line-height: 1.5;
+        opacity: 0.76;
+      }
+
+      .footer-note {
+        position: absolute;
+        left: 112px;
+        bottom: 88px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        color: rgba(20, 58, 82, 0.9);
+      }
+
+      .footer-note::before {
+        content: "";
+        width: 52px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent), rgba(255, 107, 53, 0.12));
+      }
+
+      .problem-slide {
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.84), transparent 32%),
+          linear-gradient(135deg, #fbf5ec 0%, #eef3f8 52%, #d9e5ef 100%);
+      }
+
+      .problem-slide::after {
+        content: "";
+        position: absolute;
+        right: 82px;
+        top: 68px;
+        width: 460px;
+        height: 460px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 107, 53, 0.12), transparent 68%);
+        pointer-events: none;
+      }
+
+      .problem-header {
+        position: absolute;
+        left: 112px;
+        top: 32px;
+        width: 860px;
+      }
+
+      .problem-header h2 {
+        margin: 24px 0 16px;
+        font-family: "Arial", sans-serif;
+        font-size: 78px;
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+      }
+
+      .problem-kicker {
+        max-width: 780px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 26px;
+        line-height: 1.5;
+        color: rgba(28, 36, 48, 0.86);
+      }
+
+      .problem-kicker strong {
+        color: var(--blue-deep);
+      }
+
+      .issue-panel {
+        position: absolute;
+        left: 112px;
+        top: 346px;
+        width: 676px;
+        padding: 34px 34px 30px;
+        border-radius: 30px;
+        background: rgba(255, 250, 244, 0.82);
+        border: 1px solid rgba(20, 58, 82, 0.1);
+        box-shadow: 0 20px 50px rgba(28, 36, 48, 0.08);
+      }
+
+      .section-label {
+        display: inline-block;
+        margin-bottom: 22px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        opacity: 0.58;
+      }
+
+      .issue-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .issue-card {
+        position: relative;
+        top: 5px;
+        min-height: 152px;
+        padding: 22px 22px 20px;
+        border-radius: 22px;
+        background: #ffffff;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .issue-index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: rgba(255, 107, 53, 0.12);
+        color: var(--accent);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .issue-card h3 {
+        margin: 18px 0 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 26px;
+        line-height: 1.18;
+      }
+
+      .issue-card p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.55;
+        opacity: 0.74;
+      }
+
+      .stat-column {
+        position: absolute;
+        right: 112px;
+        top: 236px;
+        width: 532px;
+      }
+
+      .signal-box {
+        position: absolute;
+        left: 956px;
+        top: 236px;
+        width: 532px;
+        padding: 26px 28px;
+        border-radius: 28px;
+        background: linear-gradient(160deg, rgba(20, 58, 82, 0.96), rgba(36, 87, 117, 0.94));
+        color: #f7fbff;
+        box-shadow: 0 24px 52px rgba(20, 58, 82, 0.2);
+      }
+
+      .signal-box p {
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.45;
+      }
+
+      .signal-box strong {
+        color: #ffd3c3;
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 20px;
+      }
+
+      .stat-card {
+        position: absolute;
+        min-height: 272px;
+        width: 257px;
+        padding: 28px 26px;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid rgba(20, 58, 82, 0.1);
+        box-shadow: 0 20px 44px rgba(28, 36, 48, 0.08);
+      }
+
+      .problem-slide .stat-card:nth-of-type(1) {
+        left: 956px;
+        top: 378px;
+      }
+
+      .problem-slide .stat-card:nth-of-type(2) {
+        left: 1231px;
+        top: 378px;
+      }
+
+      .stat-card .label {
+        display: block;
+        margin-bottom: 18px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        opacity: 0.58;
+      }
+
+      .stat-text-chip {
+        position: absolute;
+        display: inline-block;
+      }
+
+      .stat-big {
+        display: block;
+        font-family: "Arial", sans-serif;
+        font-size: 64px;
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+        color: var(--blue-deep);
+      }
+
+      .stat-big-split {
+        position: relative;
+        height: 180px;
+      }
+
+      .stat-big-chip {
+        position: absolute;
+        display: inline-block;
+        font-family: "Arial", sans-serif;
+        font-size: 64px;
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+        color: var(--blue-deep);
+      }
+
+      .stat-big-chip.arrow {
+        font-size: 56px;
+        line-height: 1;
+      }
+
+      .stat-sub {
+        display: block;
+        margin-top: 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 26px;
+        line-height: 1.1;
+        color: rgba(20, 58, 82, 0.84);
+      }
+
+      .stat-sub-split {
+        position: relative;
+        height: 42px;
+        margin-top: 10px;
+      }
+
+      .stat-sub-chip {
+        position: absolute;
+        display: inline-block;
+        font-family: "Arial", sans-serif;
+        font-size: 26px;
+        line-height: 1.1;
+        color: rgba(20, 58, 82, 0.84);
+      }
+
+      .stat-pill-chip {
+        position: absolute;
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(20, 58, 82, 0.06);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(20, 58, 82, 0.68);
+      }
+
+      .stat-mini-chip {
+        position: absolute;
+        display: inline-block;
+        font-size: 13px;
+        line-height: 1.45;
+        color: rgba(20, 58, 82, 0.72);
+      }
+
+      .stat-note-chip {
+        position: absolute;
+        display: inline-block;
+        padding-top: 12px;
+        border-top: 1px solid rgba(20, 58, 82, 0.12);
+        font-size: 14px;
+        line-height: 1.5;
+        color: rgba(20, 58, 82, 0.78);
+      }
+
+      .stat-body {
+        margin: 18px 0 0;
+        font-size: 15px;
+        line-height: 1.58;
+        opacity: 0.78;
+      }
+
+      .source-strip {
+        position: absolute;
+        left: 112px;
+        right: 112px;
+        bottom: 68px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(20, 58, 82, 0.12);
+        font-size: 13px;
+        line-height: 1.5;
+        color: rgba(28, 36, 48, 0.64);
+      }
+
+      .strategy-slide {
+        background:
+          radial-gradient(circle at 84% 18%, rgba(255, 107, 53, 0.16), transparent 22%),
+          linear-gradient(135deg, #f9f3ea 0%, #e9f0f6 52%, #d3e3ef 100%);
+      }
+
+      .strategy-header {
+        position: absolute;
+        left: 112px;
+        top: 32px;
+        width: 760px;
+      }
+
+      .strategy-header h2 {
+        margin: 24px 0 16px;
+        font-family: "Arial", sans-serif;
+        font-size: 76px;
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+      }
+
+      .strategy-kicker {
+        max-width: 720px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.55;
+        color: rgba(28, 36, 48, 0.84);
+      }
+
+      .strategy-kicker strong {
+        color: var(--blue-deep);
+      }
+
+      .reason-panel {
+        position: absolute;
+        left: 112px;
+        top: 314px;
+        width: 650px;
+        padding: 32px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(20, 58, 82, 0.08);
+        box-shadow: 0 20px 48px rgba(28, 36, 48, 0.08);
+      }
+
+      .reason-list {
+        display: grid;
+        gap: 16px;
+      }
+
+      .reason-item {
+        display: grid;
+        grid-template-columns: 46px 1fr;
+        gap: 18px;
+        align-items: start;
+        padding: 18px 18px 18px 14px;
+        border-radius: 22px;
+        background: rgba(20, 58, 82, 0.04);
+      }
+
+      .reason-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #ffefe8, #ffd4c3);
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+      }
+
+      .reason-item h3 {
+        margin: 2px 0 6px;
+        font-family: "Arial", sans-serif;
+        font-size: 28px;
+        line-height: 1.16;
+      }
+
+      .reason-item p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.58;
+        opacity: 0.76;
+      }
+
+      .pathway-panel {
+        position: absolute;
+        right: 112px;
+        top: 132px;
+        width: 614px;
+      }
+
+      .pathway-intro {
+        padding: 26px 28px;
+        border-radius: 28px;
+        background: linear-gradient(160deg, rgba(20, 58, 82, 0.96), rgba(38, 93, 125, 0.94));
+        color: #f7fbff;
+        box-shadow: 0 24px 52px rgba(20, 58, 82, 0.2);
+      }
+
+      .pathway-intro p {
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.48;
+      }
+
+      .pathway-intro strong {
+        color: #ffd8c8;
+      }
+
+      .step-flow {
+        position: relative;
+        margin-top: 22px;
+        padding: 30px 28px;
+        border-radius: 30px;
+        background: rgba(255, 250, 244, 0.84);
+        border: 1px solid rgba(20, 58, 82, 0.09);
+        box-shadow: 0 20px 46px rgba(28, 36, 48, 0.08);
+      }
+
+      .step-flow::before {
+        content: "";
+        position: absolute;
+        left: 65px;
+        top: 72px;
+        bottom: 92px;
+        width: 2px;
+        background: linear-gradient(180deg, rgba(255, 107, 53, 0.5), rgba(20, 58, 82, 0.15));
+      }
+
+      .step-list {
+        display: grid;
+        gap: 16px;
+      }
+
+      .step-item {
+        position: relative;
+        display: grid;
+        grid-template-columns: 74px 1fr;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .step-index {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        margin-left: 13px;
+        border-radius: 18px;
+        background: #ffffff;
+        border: 1px solid rgba(255, 107, 53, 0.18);
+        color: var(--accent);
+        font-size: 15px;
+        font-weight: 800;
+      }
+
+      .step-card {
+        padding: 18px 20px;
+        border-radius: 22px;
+        background: #ffffff;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .step-card h3 {
+        margin: 0 0 8px;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.14;
+      }
+
+      .step-card p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.55;
+        opacity: 0.76;
+      }
+
+      .risk-note {
+        margin-top: 18px;
+        padding: 20px 22px;
+        border-radius: 22px;
+        background: rgba(20, 58, 82, 0.06);
+        font-size: 18px;
+        line-height: 1.55;
+        color: rgba(20, 58, 82, 0.88);
+      }
+
+      .risk-note strong {
+        color: var(--blue-deep);
+      }
+
+      .solution-slide {
+        background:
+          radial-gradient(circle at 16% 16%, rgba(255, 107, 53, 0.12), transparent 20%),
+          linear-gradient(135deg, #faf4eb 0%, #eef4f8 54%, #d6e4ef 100%);
+      }
+
+      .solution-header {
+        position: absolute;
+        left: 112px;
+        top: 32px;
+        width: 780px;
+      }
+
+      .solution-header h2 {
+        margin: 24px 0 16px;
+        font-family: "Arial", sans-serif;
+        font-size: 76px;
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+      }
+
+      .solution-kicker {
+        max-width: 760px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.55;
+        color: rgba(28, 36, 48, 0.84);
+      }
+
+      .solution-kicker strong {
+        color: var(--blue-deep);
+      }
+
+      .solution-frame {
+        position: absolute;
+        left: 112px;
+        right: 112px;
+        top: 286px;
+        display: grid;
+        grid-template-columns: 412px 1fr;
+        gap: 28px;
+        align-items: start;
+      }
+
+      .scope-card {
+        padding: 30px 30px 28px;
+        border-radius: 30px;
+        background: linear-gradient(160deg, rgba(20, 58, 82, 0.96), rgba(37, 91, 122, 0.94));
+        color: #f7fbff;
+        box-shadow: 0 24px 52px rgba(20, 58, 82, 0.2);
+      }
+
+      .scope-card h3 {
+        margin: 14px 0 14px;
+        font-family: "Arial", sans-serif;
+        font-size: 34px;
+        line-height: 1.14;
+      }
+
+      .scope-card p {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.62;
+        opacity: 0.82;
+      }
+
+      .scope-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .scope-meter {
+        margin-top: 26px;
+        padding-top: 22px;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+      }
+
+      .scope-meter strong {
+        display: block;
+        font-family: "Arial", sans-serif;
+        font-size: 54px;
+        line-height: 0.98;
+      }
+
+      .scope-meter span {
+        display: block;
+        margin-top: 8px;
+        font-size: 15px;
+        line-height: 1.5;
+        opacity: 0.74;
+      }
+
+      .module-panel {
+        position: relative;
+        padding: 32px 32px 30px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(20, 58, 82, 0.08);
+        box-shadow: 0 20px 48px rgba(28, 36, 48, 0.08);
+      }
+
+      .module-panel::before {
+        content: "";
+        position: absolute;
+        left: 48px;
+        right: 48px;
+        top: 112px;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(255, 107, 53, 0.28), rgba(20, 58, 82, 0.12));
+      }
+
+      .module-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .module-card {
+        position: relative;
+        min-height: 238px;
+        padding: 18px 18px 20px;
+        border-radius: 24px;
+        background: #ffffff;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .module-card::before {
+        content: "";
+        position: absolute;
+        left: 24px;
+        right: 24px;
+        top: -9px;
+        height: 18px;
+        border-radius: 999px;
+        background: rgba(255, 107, 53, 0.08);
+      }
+
+      .module-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #fff1ea, #ffd8ca);
+        color: var(--accent);
+        font-size: 22px;
+      }
+
+      .module-card h3 {
+        margin: 18px 0 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.14;
+      }
+
+      .module-card p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.55;
+        opacity: 0.76;
+      }
+
+      .module-tag {
+        display: inline-flex;
+        margin-top: 16px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(20, 58, 82, 0.06);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(20, 58, 82, 0.7);
+      }
+
+      .detached-module-tag {
+        position: absolute;
+        z-index: 2;
+        transform: translateX(-50%);
+      }
+
+      .solution-note {
+        margin-top: 20px;
+        padding: 18px 20px;
+        border-radius: 22px;
+        background: rgba(20, 58, 82, 0.05);
+        font-size: 18px;
+        line-height: 1.55;
+        color: rgba(20, 58, 82, 0.86);
+      }
+
+      .solution-note strong {
+        color: var(--blue-deep);
+      }
+
+      .audience-slide {
+        background:
+          radial-gradient(circle at 82% 16%, rgba(20, 58, 82, 0.08), transparent 20%),
+          linear-gradient(135deg, #fbf5ec 0%, #edf4f8 54%, #d8e5ee 100%);
+      }
+
+      .audience-header {
+        position: absolute;
+        left: 112px;
+        top: 32px;
+        width: 780px;
+      }
+
+      .audience-header h2 {
+        margin: 24px 0 16px;
+        font-family: "Arial", sans-serif;
+        font-size: 76px;
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+      }
+
+      .audience-kicker {
+        max-width: 770px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.55;
+        color: rgba(28, 36, 48, 0.84);
+      }
+
+      .audience-kicker strong {
+        color: var(--blue-deep);
+      }
+
+      .audience-layout {
+        position: absolute;
+        left: 112px;
+        right: 112px;
+        top: 288px;
+        display: grid;
+        grid-template-columns: 1fr 356px;
+        gap: 28px;
+        align-items: start;
+      }
+
+      .persona-panel {
+        padding: 32px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(20, 58, 82, 0.08);
+        box-shadow: 0 20px 48px rgba(28, 36, 48, 0.08);
+      }
+
+      .persona-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .persona-card {
+        min-height: 286px;
+        padding: 22px 22px 20px;
+        border-radius: 24px;
+        background: #ffffff;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .persona-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      .persona-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #fff1ea, #ffd8ca);
+        color: var(--accent);
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .persona-badge {
+        display: inline-flex;
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: rgba(20, 58, 82, 0.06);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(20, 58, 82, 0.64);
+      }
+
+      .persona-card h3 {
+        margin: 0 0 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 26px;
+        line-height: 1.14;
+      }
+
+      .persona-card p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.58;
+        opacity: 0.76;
+      }
+
+      .persona-needs {
+        display: grid;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .persona-needs span {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(20, 58, 82, 0.05);
+        font-size: 14px;
+        line-height: 1.4;
+        color: rgba(20, 58, 82, 0.84);
+      }
+
+      .benefit-panel {
+        padding: 28px 28px 26px;
+        border-radius: 30px;
+        background: linear-gradient(160deg, rgba(20, 58, 82, 0.96), rgba(38, 92, 124, 0.94));
+        color: #f7fbff;
+        box-shadow: 0 24px 52px rgba(20, 58, 82, 0.2);
+      }
+
+      .benefit-chip {
+        display: inline-flex;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .benefit-panel h3 {
+        margin: 18px 0 12px;
+        font-family: "Arial", sans-serif;
+        font-size: 34px;
+        line-height: 1.16;
+      }
+
+      .benefit-panel p {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.62;
+        opacity: 0.82;
+      }
+
+      .benefit-stack {
+        display: grid;
+        gap: 14px;
+        margin-top: 22px;
+      }
+
+      .benefit-item {
+        padding: 16px 16px 15px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .benefit-item strong {
+        display: block;
+        margin-bottom: 6px;
+        font-family: "Arial", sans-serif;
+        font-size: 20px;
+        line-height: 1.2;
+        color: #ffd9ca;
+      }
+
+      .benefit-item span {
+        display: block;
+        font-size: 14px;
+        line-height: 1.5;
+        opacity: 0.8;
+      }
+
+      .benefit-note {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 15px;
+        line-height: 1.58;
+        opacity: 0.78;
+      }
+
+      .feature-slide {
+        background:
+          radial-gradient(circle at 18% 18%, rgba(255, 107, 53, 0.14), transparent 18%),
+          linear-gradient(135deg, #fbf4ea 0%, #eef4f8 52%, #d7e5ef 100%);
+      }
+
+      .feature-header {
+        position: absolute;
+        left: 112px;
+        top: 32px;
+        width: 760px;
+      }
+
+      .feature-header h2 {
+        margin: 24px 0 16px;
+        font-family: "Arial", sans-serif;
+        font-size: 76px;
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+      }
+
+      .feature-kicker {
+        max-width: 760px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.55;
+        color: rgba(28, 36, 48, 0.84);
+      }
+
+      .feature-kicker strong {
+        color: var(--blue-deep);
+      }
+
+      .feature-layout {
+        position: absolute;
+        left: 112px;
+        right: 112px;
+        top: 286px;
+        display: grid;
+        grid-template-columns: 1fr 346px;
+        gap: 28px;
+        align-items: start;
+      }
+
+      .feature-panel {
+        position: relative;
+        padding: 32px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(20, 58, 82, 0.08);
+        box-shadow: 0 20px 48px rgba(28, 36, 48, 0.08);
+      }
+
+      .feature-panel::before {
+        content: "";
+        position: absolute;
+        left: 70px;
+        right: 70px;
+        top: 118px;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(255, 107, 53, 0.28), rgba(20, 58, 82, 0.14));
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .feature-card {
+        position: relative;
+        min-height: 316px;
+        padding: 20px 18px 18px;
+        border-radius: 24px;
+        background: #ffffff;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .feature-step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #fff1ea, #ffd9cb);
+        color: var(--accent);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .feature-card h3 {
+        margin: 18px 0 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.15;
+      }
+
+      .feature-card p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.55;
+        opacity: 0.76;
+      }
+
+      .feature-points {
+        display: grid;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .feature-points span {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(20, 58, 82, 0.05);
+        font-size: 12px;
+        line-height: 1.4;
+        color: rgba(20, 58, 82, 0.82);
+      }
+
+      .feature-side {
+        padding: 28px 28px 26px;
+        border-radius: 30px;
+        background: linear-gradient(160deg, rgba(20, 58, 82, 0.96), rgba(38, 92, 124, 0.94));
+        color: #f7fbff;
+        box-shadow: 0 24px 52px rgba(20, 58, 82, 0.2);
+      }
+
+      .feature-side h3 {
+        margin: 18px 0 12px;
+        font-family: "Arial", sans-serif;
+        font-size: 34px;
+        line-height: 1.14;
+      }
+
+      .feature-side p {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.6;
+        opacity: 0.82;
+      }
+
+      .feature-side-chip {
+        display: inline-flex;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .feature-stack {
+        display: grid;
+        gap: 14px;
+        margin-top: 22px;
+      }
+
+      .feature-stack-item {
+        padding: 16px 16px 15px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .feature-stack-item strong {
+        display: block;
+        margin-bottom: 6px;
+        font-family: "Arial", sans-serif;
+        font-size: 20px;
+        line-height: 1.2;
+        color: #ffd9ca;
+      }
+
+      .feature-stack-item span {
+        display: block;
+        font-size: 14px;
+        line-height: 1.5;
+        opacity: 0.8;
+      }
+
+      .feature-note {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 15px;
+        line-height: 1.58;
+        opacity: 0.78;
+      }
+
+      .ai-slide {
+        background:
+          radial-gradient(circle at 84% 18%, rgba(255, 107, 53, 0.16), transparent 20%),
+          linear-gradient(135deg, #faf4ea 0%, #edf4f8 52%, #d6e4ef 100%);
+      }
+
+      .ai-header {
+        position: absolute;
+        left: 112px;
+        top: 32px;
+        width: 780px;
+      }
+
+      .ai-header h2 {
+        margin: 24px 0 16px;
+        font-family: "Arial", sans-serif;
+        font-size: 76px;
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+      }
+
+      .ai-kicker {
+        max-width: 770px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.55;
+        color: rgba(28, 36, 48, 0.84);
+      }
+
+      .ai-kicker strong {
+        color: var(--blue-deep);
+      }
+
+      .ai-panel {
+        position: absolute;
+        left: 112px;
+        top: 286px;
+        width: 988px;
+        padding: 32px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(20, 58, 82, 0.08);
+        box-shadow: 0 20px 48px rgba(28, 36, 48, 0.08);
+      }
+
+      .ai-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .ai-card {
+        min-height: 228px;
+        padding: 22px 22px 20px;
+        border-radius: 24px;
+        background: #ffffff;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .ai-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #fff1ea, #ffd8ca);
+        color: var(--accent);
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .ai-card h3 {
+        margin: 18px 0 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 28px;
+        line-height: 1.14;
+      }
+
+      .ai-card p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.58;
+        opacity: 0.76;
+      }
+
+      .ai-card .ai-tags {
+        display: grid;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .ai-card .ai-tags span {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(20, 58, 82, 0.05);
+        font-size: 14px;
+        line-height: 1.4;
+        color: rgba(20, 58, 82, 0.82);
+      }
+
+      .evidence-panel {
+        position: absolute;
+        left: 1128px;
+        top: 286px;
+        width: 360px;
+        padding: 26px;
+        border-radius: 34px;
+        background:
+          radial-gradient(circle at 18% 14%, rgba(255, 217, 202, 0.28), transparent 24%),
+          radial-gradient(circle at 86% 20%, rgba(255, 255, 255, 0.14), transparent 18%),
+          linear-gradient(155deg, #103246 0%, #18455f 42%, #245b79 100%);
+        color: #f7fbff;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 28px 60px rgba(16, 50, 70, 0.28);
+      }
+
+      .evidence-chip {
+        display: inline-flex;
+        padding: 9px 13px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .evidence-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .evidence-case {
+        margin: 14px 0 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        opacity: 0.58;
+      }
+
+      .evidence-gain {
+        margin: 10px 0 0;
+        font-family: "Arial", sans-serif;
+        font-size: 64px;
+        line-height: 0.92;
+        letter-spacing: -0.06em;
+        color: #ffd9ca;
+      }
+
+      .evidence-gain small {
+        display: block;
+        margin-top: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #f7fbff;
+        opacity: 0.7;
+      }
+
+      .evidence-subtitle {
+        margin: 12px 0 0;
+        font-size: 14px;
+        line-height: 1.5;
+        opacity: 0.8;
+      }
+
+      .evidence-compare {
+        position: relative;
+        margin-top: 22px;
+        padding: 20px 18px 18px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+
+      .evidence-compare::before {
+        content: "";
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        top: 50%;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.16), rgba(255, 217, 202, 0.44));
+        transform: translateY(-50%);
+      }
+
+      .evidence-compare-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .evidence-value {
+        display: block;
+        font-family: "Arial", sans-serif;
+        font-size: 44px;
+        line-height: 0.96;
+        color: #ffffff;
+        text-align: center;
+      }
+
+      .evidence-value small {
+        display: block;
+        margin-top: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #ffd9ca;
+        opacity: 0.88;
+      }
+
+      .evidence-arrow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 68px;
+        height: 68px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #ffe4d8, #ffb89d);
+        box-shadow:
+          0 12px 24px rgba(255, 137, 92, 0.28),
+          inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        font-family: "Arial", sans-serif;
+        font-size: 40px;
+        font-weight: 700;
+        line-height: 1;
+        color: #143a52;
+        opacity: 1;
+      }
+
+      .evidence-delta {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        margin-top: 16px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 217, 202, 0.16);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #ffe7de;
+      }
+
+      .evidence-caption {
+        margin: 14px 0 0;
+        font-size: 13px;
+        line-height: 1.45;
+        opacity: 0.82;
+      }
+
+      .evidence-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .evidence-list div {
+        padding: 14px 14px 13px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .evidence-list strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 15px;
+        line-height: 1.3;
+        color: #ffd9ca;
+      }
+
+      .evidence-list span {
+        display: block;
+        font-size: 14px;
+        line-height: 1.45;
+        opacity: 0.78;
+      }
+
+      .evidence-source {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 13px;
+        line-height: 1.5;
+        opacity: 0.74;
+      }
+
+      .system-slide {
+        background:
+          radial-gradient(circle at 18% 16%, rgba(255, 107, 53, 0.14), transparent 18%),
+          linear-gradient(135deg, #fbf4ea 0%, #eef4f8 52%, #d8e4ef 100%);
+      }
+
+      .system-header {
+        position: absolute;
+        left: 112px;
+        top: 32px;
+        width: 780px;
+      }
+
+      .system-header h2 {
+        margin: 24px 0 16px;
+        font-family: "Arial", sans-serif;
+        font-size: 76px;
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+      }
+
+      .system-kicker {
+        max-width: 780px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.55;
+        color: rgba(28, 36, 48, 0.84);
+      }
+
+      .system-kicker strong {
+        color: var(--blue-deep);
+      }
+
+      .flow-panel {
+        position: absolute;
+        left: 112px;
+        right: 112px;
+        top: 292px;
+        padding: 30px 30px 28px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid rgba(20, 58, 82, 0.08);
+        box-shadow: 0 20px 48px rgba(28, 36, 48, 0.08);
+      }
+
+      .flow-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        align-items: center;
+        margin-top: 18px;
+      }
+
+      .flow-step {
+        position: relative;
+        min-height: 224px;
+        padding: 22px 22px 20px;
+        border-radius: 24px;
+        background: #ffffff;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .flow-step::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: -14px;
+        width: 28px;
+        height: 2px;
+        background: rgba(255, 107, 53, 0.45);
+        transform: translateY(-50%);
+      }
+
+      .flow-step:last-child::after {
+        display: none;
+      }
+
+      .flow-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #fff1ea, #ffd8ca);
+        color: var(--accent);
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .flow-step h3 {
+        margin: 18px 0 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 28px;
+        line-height: 1.14;
+      }
+
+      .flow-step p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.58;
+        opacity: 0.76;
+      }
+
+      .flow-tag {
+        display: inline-flex;
+        margin-top: 18px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(20, 58, 82, 0.06);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(20, 58, 82, 0.7);
+      }
+
+      .branch-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+        margin-top: 22px;
+      }
+
+      .branch-card {
+        position: relative;
+        padding: 20px 22px 18px;
+        border-radius: 22px;
+        background: rgba(20, 58, 82, 0.05);
+      }
+
+      .branch-card.fast {
+        background: rgba(255, 107, 53, 0.08);
+      }
+
+      .branch-card.review {
+        background: rgba(20, 58, 82, 0.08);
+      }
+
+      .branch-card h3 {
+        margin: 0 0 8px;
+        font-family: "Arial", sans-serif;
+        font-size: 26px;
+        line-height: 1.16;
+      }
+
+      .branch-card p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.55;
+        opacity: 0.78;
+      }
+
+      .branch-pill {
+        display: inline-flex;
+        margin-top: 14px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.74);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(20, 58, 82, 0.74);
+      }
+
+      .impact-slide {
+        background:
+          radial-gradient(circle at 84% 18%, rgba(255, 107, 53, 0.16), transparent 20%),
+          linear-gradient(135deg, #faf4ea 0%, #edf4f8 52%, #d6e4ef 100%);
+      }
+
+      .impact-header {
+        position: absolute;
+        left: 112px;
+        top: 32px;
+        width: 820px;
+      }
+
+      .impact-header h2 {
+        margin: 24px 0 16px;
+        font-family: "Arial", sans-serif;
+        font-size: 76px;
+        line-height: 0.98;
+        letter-spacing: -0.05em;
+      }
+
+      .impact-kicker {
+        max-width: 800px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.55;
+        color: rgba(28, 36, 48, 0.84);
+      }
+
+      .impact-kicker strong {
+        color: var(--blue-deep);
+      }
+
+      .impact-layout {
+        position: absolute;
+        left: 112px;
+        width: 928px;
+        top: 290px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        align-items: start;
+      }
+
+      .impact-panel {
+        padding: 32px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(20, 58, 82, 0.08);
+        box-shadow: 0 20px 48px rgba(28, 36, 48, 0.08);
+      }
+
+      .impact-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .impact-card {
+        min-height: 272px;
+        padding: 22px 22px 20px;
+        border-radius: 24px;
+        background: #ffffff;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .impact-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #fff1ea, #ffd8ca);
+        color: var(--accent);
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .impact-card h3 {
+        margin: 18px 0 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 28px;
+        line-height: 1.14;
+      }
+
+      .impact-card p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.58;
+        opacity: 0.76;
+      }
+
+      .impact-points {
+        display: grid;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .impact-points span {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(20, 58, 82, 0.05);
+        font-size: 12px;
+        line-height: 1.4;
+        color: rgba(20, 58, 82, 0.82);
+      }
+
+      .expansion-panel {
+        position: absolute;
+        left: 1068px;
+        top: 290px;
+        width: 420px;
+        padding: 28px 28px 26px;
+        border-radius: 30px;
+        background: linear-gradient(160deg, rgba(20, 58, 82, 0.96), rgba(38, 92, 124, 0.94));
+        color: #f7fbff;
+        box-shadow: 0 24px 52px rgba(20, 58, 82, 0.2);
+      }
+
+      .expansion-chip {
+        display: inline-flex;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .expansion-panel h3 {
+        margin: 18px 0 12px;
+        font-family: "Arial", sans-serif;
+        font-size: 32px;
+        line-height: 1.14;
+      }
+
+      .expansion-panel p {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.6;
+        opacity: 0.82;
+      }
+
+      .expansion-metrics {
+        display: grid;
+        gap: 14px;
+        margin-top: 22px;
+      }
+
+      .expansion-metrics div {
+        padding: 16px 16px 15px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .expansion-metrics strong {
+        display: block;
+        margin-bottom: 6px;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.18;
+        color: #ffd9ca;
+      }
+
+      .expansion-metrics span {
+        display: block;
+        font-size: 14px;
+        line-height: 1.5;
+        opacity: 0.8;
+      }
+
+      .expansion-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .expansion-list-title {
+        display: inline-flex;
+        margin-top: 18px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #ffd9ca;
+      }
+
+      .expansion-list span {
+        position: relative;
+        display: block;
+        padding: 16px 18px 16px 52px;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.45;
+        color: #f7fbff;
+      }
+
+      .expansion-list span::before {
+        content: "";
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #ffe1d4, #ffb89d);
+        box-shadow: 0 8px 16px rgba(255, 137, 92, 0.24);
+        transform: translateY(-50%);
+      }
+
+      .expansion-list span::after {
+        content: "";
+        position: absolute;
+        left: 24px;
+        top: 50%;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #143a52;
+        transform: translateY(-50%);
+      }
+
+      .expansion-source {
+        position: absolute;
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+        font-size: 13px;
+        line-height: 1.5;
+        opacity: 0.74;
+      }
+
+      .thanks-slide {
+        background:
+          radial-gradient(circle at 82% 18%, rgba(255, 107, 53, 0.16), transparent 22%),
+          linear-gradient(135deg, #fbf4ea 0%, #edf4f8 52%, #d7e4ef 100%);
+      }
+
+      .thanks-header {
+        position: absolute;
+        left: 112px;
+        top: 36px;
+        width: 720px;
+      }
+
+      .thanks-header h2 {
+        margin: 22px 0 14px;
+        font-family: "Arial", sans-serif;
+        font-size: 86px;
+        line-height: 0.95;
+        letter-spacing: -0.06em;
+      }
+
+      .thanks-kicker {
+        max-width: 680px;
+        margin: 0;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.52;
+        color: rgba(28, 36, 48, 0.84);
+      }
+
+      .thanks-layout {
+        position: relative;
+        left: 112px;
+        right: 112px;
+        top: 286px;
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .thanks-panel {
+        padding: 28px 28px 26px;
+        border-radius: 30px;
+        background: linear-gradient(160deg, rgba(20, 58, 82, 0.96), rgba(38, 92, 124, 0.94));
+        color: #f7fbff;
+        box-shadow: 0 24px 52px rgba(20, 58, 82, 0.2);
+      }
+
+      .thanks-chip {
+        display: inline-flex;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .thanks-panel h3 {
+        margin: 18px 0 12px;
+        font-family: "Arial", sans-serif;
+        font-size: 34px;
+        line-height: 1.14;
+      }
+
+      .thanks-panel p {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.62;
+        opacity: 0.82;
+      }
+
+      .team-names {
+        display: grid;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .team-names span {
+        display: block;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.1);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .roles-panel {
+        position: absolute;
+        left: 908px;
+        top: 169px;
+        width: 819px;
+        height: 694px;
+        padding: 32px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0);
+        border: 1px solid rgba(20, 58, 82, 0.08);
+        box-shadow: 0 20px 48px rgba(28, 36, 48, 0.08);
+      }
+
+      .roles-intro {
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgba(20, 58, 82, 0.05);
+        font-size: 16px;
+        line-height: 1.58;
+        color: rgba(20, 58, 82, 0.84);
+      }
+
+      .roles-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 20px;
+      }
+
+      .role-card {
+        min-height: 174px;
+        padding: 20px 20px 18px;
+        border-radius: 22px;
+        background: #ffffff;
+        border: 1px solid rgba(20, 58, 82, 0.08);
+      }
+
+      .role-card.wide {
+        grid-column: 1 / -1;
+        min-height: 128px;
+      }
+
+      .role-card h3 {
+        margin: 0 0 10px;
+        font-family: "Arial", sans-serif;
+        font-size: 24px;
+        line-height: 1.16;
+      }
+
+      .role-card p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.58;
+        opacity: 0.78;
+      }
+
+      .hud {
+        display: none;
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        z-index: 10;
+        width: min(250px, calc(100vw - 28px));
+        padding: 12px 13px;
+        border: 1px solid rgba(28, 36, 48, 0.12);
+        border-radius: 12px;
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 18px 50px rgba(28, 36, 48, 0.12);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .panel-header-copy {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .panel-toggle {
+        flex: 0 0 auto;
+        min-width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(20, 58, 82, 0.1);
+        color: var(--blue-deep);
+        font: inherit;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .panel-toggle:hover {
+        background: rgba(20, 58, 82, 0.16);
+      }
+
+      .hud h1 {
+        margin: 0 0 6px;
+        font-size: 15px;
+      }
+
+      .hud p {
+        margin: 0;
+        line-height: 1.5;
+        font-size: 11px;
+      }
+
+      .coords {
+        margin-top: 10px;
+        padding: 10px 11px;
+        border-radius: 10px;
+        background: rgba(28, 36, 48, 0.06);
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .hud-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .hud-actions button {
+        flex: 1;
+        padding: 9px 10px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--blue-deep);
+        color: #f7fbff;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .hud-actions button.secondary {
+        background: rgba(20, 58, 82, 0.14);
+        color: var(--blue-deep);
+      }
+
+      .panel-body {
+        margin-top: 10px;
+      }
+
+      .coords small {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.6;
+      }
+
+      .debug-panel {
+        display: none;
+        position: fixed;
+        top: 14px;
+        left: 278px;
+        z-index: 10;
+        width: min(360px, calc(100vw - 292px));
+        padding: 14px;
+        border: 1px solid rgba(28, 36, 48, 0.12);
+        border-radius: 14px;
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 18px 50px rgba(28, 36, 48, 0.12);
+      }
+
+      .debug-panel h2 {
+        margin: 0 0 10px;
+        font-size: 15px;
+      }
+
+      .debug-panel p {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .hud.collapsed .panel-body,
+      .debug-panel.collapsed .panel-body,
+      .hud.collapsed .panel-header-copy,
+      .debug-panel.collapsed .panel-header-copy {
+        display: none;
+      }
+
+      .hud.collapsed,
+      .debug-panel.collapsed {
+        width: auto;
+        min-width: 0;
+        padding: 8px;
+      }
+
+      .hud.collapsed .panel-header,
+      .debug-panel.collapsed .panel-header {
+        justify-content: center;
+        gap: 0;
+      }
+
+      .hud.collapsed .panel-toggle,
+      .debug-panel.collapsed .panel-toggle {
+        margin: 0;
+      }
+
+      .debug-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .debug-field {
+        display: grid;
+        gap: 4px;
+      }
+
+      .debug-field.wide {
+        grid-column: 1 / -1;
+      }
+
+      .debug-field label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .debug-field input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid rgba(20, 58, 82, 0.12);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        font: inherit;
+        color: inherit;
+      }
+
+      .debug-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .debug-actions button {
+        flex: 1;
+        padding: 9px 10px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--blue-deep);
+        color: #f7fbff;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .debug-actions button.secondary {
+        background: rgba(20, 58, 82, 0.14);
+        color: var(--blue-deep);
+      }
+
+      .toast {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 20;
+        padding: 12px 14px;
+        border-radius: 999px;
+        background: #1c2430;
+        color: #fff;
+        font-size: 13px;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 180ms ease, transform 180ms ease;
+        pointer-events: none;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .crosshair {
+        display: none;
+        position: fixed;
+        z-index: 5;
+        pointer-events: none;
+      }
+
+      .crosshair::before,
+      .crosshair::after {
+        content: "";
+        position: absolute;
+        background: var(--accent);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+      }
+
+      .crosshair::before {
+        width: 2px;
+        height: 30px;
+        left: -1px;
+        top: -15px;
+      }
+
+      .crosshair::after {
+        width: 30px;
+        height: 2px;
+        left: -15px;
+        top: -1px;
+      }
+
+      .debug-outline,
+      .debug-parent-outline,
+      .debug-target-point,
+      .debug-desired-point,
+      .debug-resize-handle {
+        position: absolute;
+        z-index: 9;
+      }
+
+      .debug-outline,
+      .debug-parent-outline,
+      .debug-target-point,
+      .debug-desired-point {
+        pointer-events: none;
+      }
+
+      .debug-outline {
+        border: 2px solid rgba(255, 107, 53, 0.9);
+        box-shadow: inset 0 0 0 1px rgba(255, 107, 53, 0.2);
+      }
+
+      .debug-parent-outline {
+        border: 2px dashed rgba(20, 58, 82, 0.6);
+      }
+
+      .debug-target-point,
+      .debug-desired-point {
+        width: 12px;
+        height: 12px;
+        margin-left: -6px;
+        margin-top: -6px;
+        border-radius: 999px;
+      }
+
+      .debug-target-point {
+        background: #ff6b35;
+        box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.18);
+      }
+
+      .debug-desired-point {
+        background: #143a52;
+        box-shadow: 0 0 0 4px rgba(20, 58, 82, 0.18);
+      }
+
+      .debug-resize-handle {
+        display: none;
+        width: 16px;
+        height: 16px;
+        margin-left: -8px;
+        margin-top: -8px;
+        border-radius: 999px;
+        border: 2px solid #ffffff;
+        background: #143a52;
+        box-shadow: 0 0 0 4px rgba(20, 58, 82, 0.18);
+        cursor: nwse-resize;
+        pointer-events: auto;
+      }
+
+      .debug-draggable {
+        cursor: move;
+      }
+
+      .debug-dragging {
+        user-select: none;
+      }
+
+      .hint {
+        position: fixed;
+        left: 14px;
+        bottom: 14px;
+        font-size: 11px;
+        opacity: 0.7;
+      }
+
+      .copy-panel {
+        position: fixed;
+        z-index: 25;
+        min-width: 180px;
+        max-width: min(280px, calc(100vw - 24px));
+        padding: 10px;
+        border: 1px solid rgba(28, 36, 48, 0.12);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 18px 40px rgba(28, 36, 48, 0.18);
+        display: none;
+      }
+
+      .copy-panel.show {
+        display: block;
+      }
+
+      .copy-panel p {
+        margin: 0 0 8px;
+        font-size: 11px;
+        opacity: 0.72;
+      }
+
+      .copy-panel input {
+        width: 100%;
+        border: 0;
+        outline: 0;
+        background: rgba(28, 36, 48, 0.06);
+        border-radius: 8px;
+        padding: 10px;
+        font: inherit;
+        font-size: 14px;
+      }
+
+      @media (max-width: 640px) {
+        .hud {
+          top: 12px;
+          left: 12px;
+          width: calc(100vw - 24px);
+        }
+
+        .debug-panel {
+          top: auto;
+          left: 12px;
+          right: 12px;
+          bottom: 52px;
+          width: auto;
+        }
+
+        .hint,
+        .toast {
+          left: 12px;
+          right: 12px;
+          bottom: 12px;
+        }
+
+        .toast {
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body class="">
+    <main class="deck" aria-label="AI Claim OS slide deck">
+      <div class="slide-stage" id="slideStage" style="transform: scale(0.972222);">
+        <section class="slide slide-cover" aria-label="1장 표지">
+          <div class="hero-grid" aria-hidden="true"></div>
+          <div class="hero-orb one" aria-hidden="true"></div>
+          <div class="hero-orb two" aria-hidden="true"></div>
+
+          <div class="content">
+            <div class="eyebrow">Slide 01 · Cover</div>
+            <h1>AI Claim OS</h1>
+            <p class="subtitle">
+              단순 청구의 접수·서류 점검·1차 분류를 자동화하는 AI 클레임 운영 시스템
+            </p>
+
+            <div class="meta-row">
+              <article class="meta-card" style="min-width:220px;">
+                <span class="label">Project</span>
+                <strong>AI Claim OS</strong>
+                <p>디지털 기반 보험 클레임                <br>  운영 자동화</p>
+              </article>
+              <article class="meta-card">
+                <span class="label">Team</span>
+                <strong>Claim Bridge</strong>
+                <p>주재문 · 김성휘 · 박주영 · 오상진 · 이상헌</p>
+              </article>
+              <article class="meta-card">
+                <span class="label">Domain</span>
+                <strong>Insurance Tech</strong>
+                <p>접수, 문서 검토, 분류, 고객 안내</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="hero-card">
+            <div class="hero-card-label">Focus</div>
+            <h3>단순 청구부터</h3>
+            <p>접수 · 서류 확인 · 1차 분류 우선 자동화</p>
+          </div>
+
+          <div class="footer-note">Project / Team / Domain Overview</div>
+        </section>
+
+        <section class="slide problem-slide" aria-label="2장 문제 정의" style="left: 2px; top: 0px; width: 1599.98px; height: 900px;">
+          <div class="problem-header">
+            <div class="eyebrow">Slide 02 · Problem</div>
+            <h2>문제 정의</h2>
+            <p class="problem-kicker">
+              보험금 청구는 지연과 수작업 부담이 함께 커지는<strong> 처리 규모가 큰 업무</strong>
+            </p>
+          </div>
+
+          <section class="issue-panel debug-draggable" style="left: 114px; top: 282px; width: 676px; height: 442px;">
+            <span class="section-label">Core Frictions</span>
+            <div class="issue-list">
+              <article class="issue-card">
+                <span class="issue-index">01</span>
+
+                <h3>청구 처리 지연</h3>
+              </article>
+              <article class="issue-card">
+                <span class="issue-index">02</span>
+                <h3>서류 확인 수작업</h3>
+              </article>
+              <article class="issue-card">
+                <span class="issue-index">03</span>
+                <h3>단순·복잡 건 혼재</h3>
+              </article>
+              <article class="issue-card">
+                <span class="issue-index">04</span>
+                <h3>진행 상황 불투명</h3>
+              </article>
+            </div>
+          </section>
+
+          <div class="signal-box debug-draggable" style="left: 961px; top: 169px; width: 532px; height: 87px;">
+            <p class="" style="left: -8px; top: 35px; width: 476px; height: 34.7969px;"><strong>규모가 큰데</strong> 지연 문제도 커지고 있다.</p>
+          </div>
+
+          <article class="stat-card" style="left: 961px; top: 301px; width: 256.984px; height: 436px;">
+            <span class="label stat-text-chip debug-draggable" style="left: 26px; top: 28px;">2023 H2 Claim Volume</span>
+            <strong class="stat-big stat-text-chip debug-draggable" style="left: 24px; top: 64px; width: 202px; height: 61px;">944만건</strong>
+            <span class="stat-sub stat-text-chip" style="left: 29px; top: 133px; width: 124.5px; height: 28.5781px;">99.561조원</span>
+            <span class="stat-pill-chip" style="left: 27px; top: 238px; width: 106.531px; height: 28.4922px;">High Volume</span>
+            <span class="stat-mini-chip" style="left: 26px; top: 288px; width: 201.977px; height: 37.6875px;">반복 처리 비중이 높아 운영 설계의 영향이 크게 드러나는 구간</span>
+            <span class="stat-note-chip" style="left: 25px; top: 352px; width: 203.969px; height: 54.9844px;">작은 개선도 전체 처리 경험에는 큰 차이로 번질 수 있습니다.</span>
+          </article>
+          <article class="stat-card" style="left: 1237px; top: 300px; width: 260px; height: 437px;">
+            <span class="label stat-text-chip debug-draggable" style="left: 26px; top: 28px;">Delay Rate Trend</span>
+            <div class="stat-big-split debug-draggable" style="left: -31px; top: 33px; width: 207px; height: 180px;">
+              <strong class="stat-big-chip debug-draggable" style="left: 28px; top: 0px;">6.8%</strong>
+              <strong class="stat-big-chip arrow debug-draggable" style="left: 75px; top: 56px;">↓</strong>
+              <strong class="stat-big-chip debug-draggable" style="left: 29px; top: 116px;">9.3%</strong>
+            </div>
+            <div class="stat-sub-split" style="left: -6px; top: -66px;">
+              <span class="stat-sub-chip" style="left: 145px; top: -63px; width: 57.8436px; height: 28.586px;">(2020)</span>
+              <span class="stat-sub-chip debug-draggable" style="left: 145px; top: 52px; width: 58px; height: 29px;">(2025)</span>
+            </div>
+            <span class="stat-pill-chip debug-draggable" style="left: 26px; top: 244px;">Rising Pressure</span>
+            <span class="stat-mini-chip debug-draggable" style="left: 26px; top: 288px; width: 206px;">시간이 갈수록 지연 비중이 높아지면서 운영 부담이 더 눈에 띄게 커지는 흐름</span>
+            <span class="stat-note-chip" style="left: 26px; top: 352px; width: 206px;">지연 추세가 이어질수록 고객 체감 불만도 함께 커질 가능성이 높습니다.</span>
+          </article>
+
+          <div class="source-strip debug-draggable" style="left: 43px; top: 826px; width: 1376px; height: 36px;">
+            출처: 보험연구원, 「보험산업 신뢰회복을 위한 과제(Ⅱ): 보험금 지급」, 2024; 한국소비자원, 「손해보험 소비자분쟁, 88.0%가 보험금 지급 관련 불만」, 2025.
+          </div>
+        </section>
+
+        <section class="slide strategy-slide" aria-label="3장 왜 이 문제부터 푸는가">
+          <div class="strategy-header">
+            <div class="eyebrow">Slide 03 · Strategy</div>
+            <h2>왜 이 문제부터 푸는가</h2>
+            <p class="strategy-kicker">
+              <strong>단순 청구부터 단계적으로</strong> 시작하는 편이 현실적
+            </p>
+          </div>
+
+          <section class="reason-panel">
+            <span class="section-label">Why Start Here</span>
+            <div class="reason-list">
+              <article class="reason-item">
+                <span class="reason-badge">A1</span>
+                <div>
+                  <h3>반복적이고 규칙 기반</h3>
+                  <p>입력과 판정 기준이 비교적 명확합니다.</p>
+                </div>
+              </article>
+              <article class="reason-item">
+                <span class="reason-badge">A2</span>
+                <div>
+                  <h3>효과 측정이 빠름</h3>
+                  <p>처리 시간과 보완 요청 수를 바로 볼 수 있습니다.</p>
+                </div>
+              </article>
+              <article class="reason-item">
+                <span class="reason-badge">A3</span>
+                <div>
+                  <h3>도입 부담과 실패 위험 축소</h3>
+                  <p>작게 시작해 리스크를 줄일 수 있습니다.</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="pathway-panel">
+            <div class="pathway-intro">
+              <p><strong>처음부터 전부</strong>가 아니라, 성공 가능성이 높은 영역부터 쌓아 올립니다.</p>
+            </div>
+
+            <div class="step-flow">
+              <span class="section-label">Phased Rollout</span>
+              <div class="step-list">
+                <article class="step-item">
+                  <span class="step-index">01</span>
+                  <div class="step-card">
+                    <h3>단순 청구 자동화</h3>
+                    <p>접수·서류 확인·1차 분류부터 자동화합니다.</p>
+                  </div>
+                </article>
+                <article class="step-item">
+                  <span class="step-index">02</span>
+                  <div class="step-card">
+                    <h3>현업 검증과 룰 보정</h3>
+                    <p>예외 케이스를 반영해 룰을 다듬습니다.</p>
+                  </div>
+                </article>
+                <article class="step-item">
+                  <span class="step-index">03</span>
+                  <div class="step-card">
+                    <h3>복잡 건·고도화 영역 확장</h3>
+                    <p>이후 이상탐지와 대시보드로 확장합니다.</p>
+                  </div>
+                </article>
+              </div>
+
+              <div class="risk-note">
+                <strong>핵심:</strong> 작게 시작하고, 검증하며 넓혀갑니다.
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="slide solution-slide" aria-label="4장 제안 솔루션" style="left: 2px; top: 0px; width: 1599.98px; height: 900px;">
+          <div class="solution-header">
+            <div class="eyebrow">Slide 04 · Solution</div>
+            <h2>제안 솔루션</h2>
+            <p class="solution-kicker">
+              <strong>초기 운영 범위를 줄인 버전</strong>으로 먼저 시작
+            </p>
+          </div>
+
+          <div class="solution-frame">
+            <section class="scope-card">
+              <span class="scope-chip">Scaled MVP</span>
+              <h3>AI Claim OS의 초기 실행 버전</h3>
+              <p>전체 OS가 아닌, 가장 먼저 효과가 나는 범위만 묶은 버전입니다.</p>
+              <div class="scope-meter">
+                <strong>5 Modules</strong>
+                <span>접수부터 상태 안내까지, 초기 운영 범위만 선별 적용</span>
+              </div>
+            </section>
+
+            <section class="module-panel">
+              <span class="section-label">Initial Scope</span>
+              <div class="module-grid">
+                <article class="module-card" style="left: 0px; top: 0px; width: 179px; height: 238px;">
+                  <span class="module-icon">1</span>
+                  <h3>디지털 접수</h3>
+                  <p>접수 데이터를 표준화합니다.</p>
+                </article>
+                <article class="module-card" style="left: 0px; top: 0px; width: 179px; height: 234px;">
+                  <span class="module-icon">2</span>
+                  <h3>서류 자동 읽기</h3>
+                  <p>문서 핵심 항목을 자동 추출합니다.</p>
+                </article>
+                <article class="module-card" style="left: 0px; top: 0px; width: 179px; height: 236px;">
+                  <span class="module-icon">3</span>
+                  <h3>누락 서류 확인</h3>
+                  <p>빠진 서류를 즉시 찾습니다.</p>
+                </article>
+                <article class="module-card debug-draggable" style="left: 1px; top: 0px; width: 178px; height: 238px;">
+                  <span class="module-icon">4</span>
+                  <h3>1차 분류</h3>
+                  <p>단순 건과 일반 건을 초기에 나눕니다.</p>
+                </article>
+                <article class="module-card" style="left: 0px; top: 0px; width: 179px; height: 236px;">
+                  <span class="module-icon">5</span>
+                  <h3>진행 상태 안내</h3>
+                  <p>현재 단계와 필요 조치를 공유합니다.</p>
+                </article>
+              </div>
+              <span class="module-tag detached-module-tag" style="left: 116px; top: 271px; width: 108.953px; height: 28.4922px;">Input Layer</span>
+              <span class="module-tag detached-module-tag debug-draggable" style="left: 290px; top: 274px; width: 110px; height: 28px;">Document AI</span>
+              <span class="module-tag detached-module-tag" style="left: 468px; top: 277px; width: 101.227px; height: 28.5px;">Rule Check</span>
+              <span class="module-tag detached-module-tag" style="left: 642px; top: 278px; width: 70.3358px; height: 28.5px;">Triage</span>
+              <span class="module-tag detached-module-tag" style="left: 823px; top: 271px; width: 116.992px; height: 40.9922px;">Customer Update</span>
+            </section>
+          </div>
+        </section>
+
+        <section class="slide audience-slide" aria-label="5장 타겟 사용자 및 니즈">
+          <div class="audience-header">
+            <div class="eyebrow">Slide 05 · Audience</div>
+            <h2>타겟 사용자 및 니즈</h2>
+            <p class="audience-kicker">
+              <strong>운영 조직의 효율</strong>을 높이고, 결국 고객 경험까지 개선
+            </p>
+          </div>
+
+          <div class="audience-layout">
+            <section class="persona-panel">
+              <span class="section-label">Primary Users</span>
+              <div class="persona-grid">
+                <article class="persona-card">
+                  <div class="persona-top">
+                    <span class="persona-icon">B</span>
+                    <span class="persona-badge">Insurer</span>
+                  </div>
+                  <h3>보험사 보상부서</h3>
+                  <p>보상 실무의 핵심 사용자입니다.</p>
+                  <div class="persona-needs">
+                    <span>처리 지연 감소</span>
+                    <span>반복 검토 업무 축소</span>
+                    <span>단순 건의 빠른 선처리</span>
+                  </div>
+                </article>
+                <article class="persona-card">
+                  <div class="persona-top">
+                    <span class="persona-icon">T</span>
+                    <span class="persona-badge">TPA</span>
+                  </div>
+                  <h3>TPA / 운영 대행 조직</h3>
+                  <p>대량 청구를 운영하는 조직입니다.</p>
+                  <div class="persona-needs">
+                    <span>대량 업무 처리 효율화</span>
+                    <span>운영 인력 부담 완화</span>
+                    <span>일관된 처리 기준 확보</span>
+                  </div>
+                </article>
+                <article class="persona-card">
+                  <div class="persona-top">
+                    <span class="persona-icon">C</span>
+                    <span class="persona-badge">Contact</span>
+                  </div>
+                  <h3>고객센터 운영팀</h3>
+                  <p>고객 문의를 직접 받는 부서입니다.</p>
+                  <div class="persona-needs">
+                    <span>진행 상태 가시성</span>
+                    <span>반복 문의 감소</span>
+                    <span>응대 품질 표준화</span>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <aside class="benefit-panel" style="left: 22px; top: -4px; width: 355.984px; height: 542.352px;">
+              <span class="benefit-chip">Indirect Beneficiary</span>
+              <h3 class="">보험 가입 고객</h3>
+              <p>가장 크게 체감하는 최종 수혜자입니다.</p>
+
+              <div class="benefit-stack">
+                <div class="benefit-item">
+                  <strong>더 빠른 접수·처리</strong>
+                  <span>단순 청구는 더 짧은 리드타임으로 진행됩니다.</span>
+                </div>
+                <div class="benefit-item">
+                  <strong>더 명확한 안내</strong>
+                  <span>현재 단계와 추가 필요 서류를 투명하게 확인할 수 있습니다.</span>
+                </div>
+                <div class="benefit-item">
+                  <strong>더 적은 불확실성</strong>
+                  <span>진행 상황을 모르는 데서 오는 불안과 반복 문의를 줄입니다.</span>
+                </div>
+              </div>
+
+            </aside>
+          </div>
+        </section>
+
+        <section class="slide feature-slide" aria-label="6장 핵심 기능">
+          <div class="feature-header">
+            <div class="eyebrow">Slide 06 · Features</div>
+            <h2>핵심 기능</h2>
+            <p class="feature-kicker">
+              <strong>접수부터 분류와 안내까지</strong> 기본 흐름을 자동화
+            </p>
+          </div>
+
+          <div class="feature-layout">
+            <section class="feature-panel">
+              <span class="section-label">Core Functions</span>
+              <div class="feature-grid">
+                <article class="feature-card">
+                  <span class="feature-step">01</span>
+                  <h3>디지털 접수</h3>
+                  <p>청구 입력을 표준 포맷으로 받습니다.</p>
+                  <div class="feature-points">
+                    <span>입력 형식 표준화</span>
+                    <span>접수 채널 일원화</span>
+                    <span>초기 데이터 축적</span>
+                  </div>
+                </article>
+                <article class="feature-card" style="left: 0px; top: 0px; width: 180px; height: 355px;">
+                  <span class="feature-step">02</span>
+                  <h3>서류 자동 읽기</h3>
+                  <p>서류 핵심 정보를 자동 추출합니다.</p>
+                  <div class="feature-points">
+                    <span>문서 주요 항목 추출</span>
+                    <span>기초 데이터 구조화</span>
+                    <span>검토 준비 시간 단축</span>
+                  </div>
+                </article>
+                <article class="feature-card debug-draggable" style="left: 0px; top: 0px; width: 181px; height: 355px;">
+                  <span class="feature-step">03</span>
+                  <h3>누락 서류 탐지</h3>
+                  <p>누락을 조기 식별해 재요청을 앞당깁니다.</p>
+                  <div class="feature-points">
+                    <span>필수 서류 체크</span>
+                    <span>보완 요청 자동화</span>
+                    <span>병목 사전 차단</span>
+                  </div>
+                </article>
+                <article class="feature-card" style="left: 0px; top: 0px; width: 174.398px; height: 355px;">
+                  <span class="feature-step">04</span>
+                  <h3 class="">1차 분류</h3>
+                  <p>단순 건과 일반 건을 초기에 구분합니다.</p>
+                  <div class="feature-points">
+                    <span>초기 triage 수행</span>
+                    <span>단순 건 우선 처리</span>
+                    <span>복잡 건 예외 분리</span>
+                  </div>
+                </article>
+                <article class="feature-card" style="left: 0px; top: 0px; width: 178px; height: 354px;">
+                  <span class="feature-step">05</span>
+                  <h3 class="">진행 상태 안내</h3>
+                  <p>현재 단계와 추가 조치를 안내합니다.</p>
+                  <div class="feature-points">
+                    <span>현재 단계 가시화</span>
+                    <span>추가 조치 안내</span>
+                    <span>문의량 감소</span>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <aside class="feature-side debug-draggable" style="left: -100px; top: -122px; width: 358px; height: 544px;">
+              <span class="feature-side-chip">System Value</span>
+              <h3>초기 기능 묶음의 의미</h3>
+              <p class="">다섯 기능은 하나의 운영 파이프라인으로 연결됩니다.</p>
+
+              <div class="feature-stack">
+                <div class="feature-stack-item">
+                  <strong>입력</strong>
+                  <span>디지털 접수로 표준화된 출발점을 만든다.</span>
+                </div>
+                <div class="feature-stack-item">
+                  <strong>판독·탐지</strong>
+                  <span>서류 읽기와 누락 탐지로 검토 병목을 줄인다.</span>
+                </div>
+                <div class="feature-stack-item">
+                  <strong>분류·안내</strong>
+                  <span>단순 건은 빠르게 보내고, 고객 커뮤니케이션은 더 투명하게 만든다.</span>
+                </div>
+              </div>
+
+            </aside>
+          </div>
+        </section>
+
+        <section class="slide ai-slide" aria-label="7장 핵심 AI 기술">
+          <div class="ai-header">
+            <div class="eyebrow">Slide 07 · AI Tech</div>
+            <h2>핵심 AI 기술</h2>
+            <p class="ai-kicker">
+              초기 버전은 <strong>문서를 읽고,<br>분류하고, 규칙으로 판정하는 기술</strong>에 집중
+            </p>
+          </div>
+
+          <aside class="evidence-panel debug-draggable" style="left: 89px; top: 287px; width: 436px;">
+            <div class="evidence-head debug-draggable" style="left: -99px; top: 10px; width: 364px; height: 58px;">
+              <div>
+                <span class="evidence-chip">Evidence Box</span>
+                <p class="evidence-case">교보생명 사례</p>
+              </div>
+            </div>
+
+            <div class="evidence-gain" style="left: -3px; top: -19px; width: 363.992px; height: 78.8281px;">
+              2.8x
+              <small>더 빠른 처리</small>
+            </div>
+
+            <div class="evidence-compare">
+              <div class="evidence-compare-grid">
+                <span class="evidence-value">0.67일<small>업계 평균</small></span>
+                <span class="evidence-arrow" aria-hidden="true">→</span>
+                <span class="evidence-value">0.24일<small>교보생명</small></span>
+              </div>
+            </div>
+            <div class="evidence-list">
+              <div>
+                <strong>시사점</strong>
+                <span>AI/OCR 자동심사 처리 시간 기준, 문서 자동화는 초기 적용만으로도 비교값 대비 약 2.8배 빠른 성과를 만듭니다.</span>
+              </div>
+            </div>
+
+            <div class="evidence-source">
+              출처: 교보생명 뉴스룸, 「AI·디지털 혁신의 결실…교보생명, 보험금 신속 지급 업계 최고」, 2025.
+            </div>
+          </aside>
+
+          <section class="ai-panel" style="left: 576px; top: 59px; width: 987.961px; height: 786.836px;">
+            <span class="section-label">Essential Stack</span>
+            <div class="ai-grid">
+              <article class="ai-card">
+                <span class="ai-icon">O</span>
+                <h3>OCR / 문서 이해</h3>
+                <p>문서 정보를 읽어 구조화합니다.</p>
+                <div class="ai-tags">
+                  <span>문자 추출</span>
+                  <span>항목 구조화</span>
+                  <span>문서 이해의 출발점</span>
+                </div>
+              </article>
+              <article class="ai-card">
+                <span class="ai-icon">C</span>
+                <h3>분류 모델</h3>
+                <p>단순 건과 일반 건을 구분합니다.</p>
+                <div class="ai-tags">
+                  <span>건 유형 분류</span>
+                  <span>우선순위 구분</span>
+                  <span>초기 자동 배정</span>
+                </div>
+              </article>
+              <article class="ai-card">
+                <span class="ai-icon">A</span>
+                <h3>이상탐지 모델</h3>
+                <p>예외 신호를 포착하는 확장 기반입니다.</p>
+                <div class="ai-tags">
+                  <span>예외 신호 포착</span>
+                  <span>후속 고도화 영역</span>
+                  <span>리스크 관리 기반</span>
+                </div>
+              </article>
+              <article class="ai-card">
+                <span class="ai-icon">R</span>
+                <h3>룰 엔진</h3>
+                <p>누락 여부와 분기 조건을 안정적으로 판정합니다.</p>
+                <div class="ai-tags">
+                  <span>정책 반영</span>
+                  <span>판정 일관성</span>
+                  <span>운영 통제 가능성</span>
+                </div>
+              </article>
+            </div>
+          </section>
+        </section>
+
+        <section class="slide system-slide" aria-label="8장 처리 흐름 / 시스템 구조">
+          <div class="system-header">
+            <div class="eyebrow">Slide 08 · Flow</div>
+            <h2>처리 흐름 / 시스템 구조</h2>
+            <p class="system-kicker">
+              구조는 <strong>입력 → AI 처리 → 업무 로직 → 출력</strong>으로 단순화
+            </p>
+          </div>
+
+          <section class="flow-panel">
+            <span class="section-label">Operational Pipeline</span>
+            <div class="flow-row">
+              <article class="flow-step">
+                <span class="flow-icon">I</span>
+                <h3>입력</h3>
+                <p>고객이 디지털 채널로 청구를 접수합니다.</p>
+                <span class="flow-tag">Input</span>
+              </article>
+              <article class="flow-step">
+                <span class="flow-icon">A</span>
+                <h3>AI 처리</h3>
+                <p>AI가 서류를 읽고 판단 신호를 만듭니다.</p>
+                <span class="flow-tag">AI Layer</span>
+              </article>
+              <article class="flow-step">
+                <span class="flow-icon">R</span>
+                <h3>업무 로직</h3>
+                <p>룰 엔진이 분기 조건을 확인합니다.</p>
+                <span class="flow-tag">Business Logic</span>
+              </article>
+              <article class="flow-step">
+                <span class="flow-icon">O</span>
+                <h3>출력</h3>
+                <p>결과와 상태 안내가 전달됩니다.</p>
+                <span class="flow-tag">Output</span>
+              </article>
+            </div>
+
+            <div class="branch-row">
+              <article class="branch-card fast">
+                <h3>단순 건은 AI가 빠르게 처리</h3>
+                <p>기준이 명확한 청구는 빠른 레인으로 보냅니다.</p>
+                <span class="branch-pill">Fast Lane</span>
+              </article>
+              <article class="branch-card review">
+                <h3>예외 건은 담당자 검토</h3>
+                <p>애매한 건은 사람 검토로 넘깁니다.</p>
+                <span class="branch-pill">Human Review</span>
+              </article>
+            </div>
+          </section>
+        </section>
+
+        <section class="slide impact-slide active" aria-label="9장 기대 효과 + 확장 방향">
+          <div class="impact-header">
+            <div class="eyebrow">Slide 09 · Impact</div>
+            <h2>기대 효과 + 확장 방향</h2>
+            <p class="impact-kicker">
+              초기 버전만으로도 <strong>속도, 운영 효율, 고객 안내</strong>를 개선 가능
+            </p>
+          </div>
+
+          <aside class="expansion-panel debug-draggable" style="left: 1085px; top: 42px; width: 420px; height: 817px;">
+            <div class="expansion-source debug-draggable" style="left: 29px; top: 707px; width: 364px; height: 78px;">
+              출처: 한국소비자원, 「손해보험 소비자분쟁, 88.0%가 보험금 지급 관련 불만」, 2025; 연합뉴스(금융감독원 자료 인용), 「작년 보험사기 적발액 1조1천억원…자동차보험 사기 16%↑」, 2024.
+            </div>
+            <span class="expansion-chip">Next Expansion</span>
+            <h3>고객 불만 완화 + 이상탐지 확장 필요성</h3>
+            <p>고객 불만과 사기 탐지 수요가 모두 증가</p>
+
+            <div class="expansion-metrics">
+              <div>
+                <strong>88.0%</strong>
+                <span>소비자 분쟁 중 보험금 지급 관련 불만 비중</span>
+              </div>
+              <div>
+                <strong>1조 1,164억원</strong>
+                <span>보험사기 적발액</span>
+              </div>
+              <div class="">
+                <strong>5,476억원</strong>
+                <span>자동차보험 사기 적발 규모</span>
+              </div>
+            </div>
+
+            <span class="expansion-list-title">Roadmap</span>
+            <div class="expansion-list">
+              <span>이후 이상탐지 고도화</span>
+              <span class="" style="left: 0px; top: -25px; width: 364px; height: 42px;">운영 대시보드 확대</span>
+              <span class="" style="left: 2px; top: -43px; width: 362px; height: 42px;">상품군별 확장</span>
+            </div>
+
+          </aside>
+
+          <div class="impact-layout">
+            <section class="impact-panel">
+              <span class="section-label">Expected Impact</span>
+              <div class="impact-grid">
+                <article class="impact-card">
+                  <span class="impact-icon">S</span>
+                  <h3>처리 속도 향상</h3>
+                  <p>단순 청구 리드타임을 줄입니다.</p>
+                  <div class="impact-points">
+                    <span>초기 병목 제거</span>
+                    <span>단순 건 Fast Lane</span>
+                    <span>응답 시간 단축</span>
+                  </div>
+                </article>
+                <article class="impact-card">
+                  <span class="impact-icon">W</span>
+                  <h3>반복 업무 감소</h3>
+                  <p>문서 작업, 안내 업무를 줄입니다.</p>
+                  <div class="impact-points">
+                    <span>수작업 축소</span>
+                    <span>운영 효율 증가</span>
+                    <span>인력 재배치 가능</span>
+                  </div>
+                </article>
+                <article class="impact-card debug-draggable" style="left: 0px; top: 0px; width: 288px; height: 371px;">
+                  <span class="impact-icon">T</span>
+                  <h3>고객 안내 투명성 강화</h3>
+                  <p>진행 상태와 추가 조치를 안내합니다.</p>
+                  <div class="impact-points">
+                    <span>상태 가시성 개선</span>
+                    <span>반복 문의 감소</span>
+                    <span>고객 신뢰 회복</span>
+                  </div>
+                </article>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="slide thanks-slide debug-draggable" aria-label="10장 Thanks" style="left: 0px; top: 0px; width: 1600px; height: 900px;">
+          <div class="thanks-header">
+            <div class="eyebrow">Slide 10 · Thanks</div>
+            <h2>Thanks for watching</h2>
+            <p class="thanks-kicker">프로젝트 마무리와 함께 팀원별 역할을 정리했습니다.</p>
+          </div>
+
+          <div class="thanks-layout">
+            <section class="roles-panel" style="left: 579px; top: -189px; width: 819px; height: 694px;">
+              <span class="section-label">Team Roles</span>
+              <div class="roles-intro" style="left: -219px; top: 12px;">
+                전원 - 주제 선정과 초기 아이디어 도출에 공동 참여
+              </div>
+              <div class="roles-grid">
+                <article class="role-card wide">
+                  <h3>이상헌</h3>
+                  <p>핵심 기능 구조화, AI 기술 적용 방안 정리 및 시스템 구성 검토에 참여</p>
+                </article>
+                <article class="role-card">
+                  <h3>주재문</h3>
+                  <p>시스템 구성, 처리 흐름, 운영 구조 설계 및 AI 구조와 사용자 흐름 검토에 참여</p>
+                </article>
+                <article class="role-card">
+                  <h3>김성휘</h3>
+                  <p>문제 탐색, 기획의도 정리, 최종 문서 구조화 및 사용자 분석과 최종 수정 과정에 참여</p>
+                </article>
+                <article class="role-card">
+                  <h3>박주영</h3>
+                  <p>사용자 분석, 서비스 필요성 정리 및 문제 정의와 서비스 흐름 검토에 참여</p>
+                </article>
+                <article class="role-card">
+                  <h3>오상진</h3>
+                  <p>최종 문서 완성도 점검 및 사용자 관점 효과와 최종 수정 과정에 참여</p>
+                </article>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <div class="debug-parent-outline" id="debugParentOutline" aria-hidden="true"></div>
+        <div class="debug-outline" id="debugOutline" aria-hidden="true"></div>
+        <div class="debug-target-point" id="debugTargetPoint" aria-hidden="true"></div>
+        <div class="debug-desired-point" id="debugDesiredPoint" aria-hidden="true"></div>
+        <div class="debug-resize-handle" id="debugResizeHandle" aria-hidden="true"></div>
+      </div>
+    </main>
+
+    <section class="hud" id="coordinateDebuggerPanel">
+      <div class="panel-header">
+        <div class="panel-header-copy">
+          <h1>Coordinate Debugger</h1>
+          <p>마우스를 움직이면 현재 좌표를 보여주고, 우클릭하면 해당 좌표를 복사합니다.</p>
+        </div>
+        <button class="panel-toggle" id="coordinateDebuggerToggle" type="button" aria-expanded="true" aria-controls="coordinateDebuggerBody">-</button>
+      </div>
+      <div class="panel-body" id="coordinateDebuggerBody">
+        <div class="coords" id="coords">
+          <small>Current</small>
+          <span id="coordsValue">x: 361, y: 205 · viewport x: 597, y: 252</span>
+        </div>
+        <div class="hud-actions">
+          <button class="secondary" id="toggleDebuggerVisualsButton" type="button" aria-pressed="true">Debugger ON</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="debug-panel" id="targetInspectorPanel" aria-label="Target coordinate debugger">
+      <div class="panel-header">
+        <div class="panel-header-copy">
+          <h2>Target Inspector</h2>
+          <p>슬라이드 안의 아무 요소나 클릭해서 선택하고, 바로 드래그하거나 좌표를 보정할 수 있습니다.</p>
+        </div>
+        <button class="panel-toggle" id="targetInspectorToggle" type="button" aria-expanded="true" aria-controls="targetInspectorBody">-</button>
+      </div>
+      <div class="panel-body" id="targetInspectorBody">
+        <div class="debug-grid">
+          <div class="debug-field wide">
+            <label for="targetSelector">Target selector</label>
+            <input id="targetSelector" value=".thanks-slide .roles-panel">
+          </div>
+          <div class="debug-field">
+            <label for="targetX">Desired X</label>
+            <input id="targetX" type="number" value="908">
+          </div>
+          <div class="debug-field">
+            <label for="targetY">Desired Y</label>
+            <input id="targetY" type="number" value="169">
+          </div>
+        </div>
+
+        <div class="debug-actions">
+          <button id="refreshDebugButton" type="button">Refresh</button>
+          <button class="secondary" id="applyDebugButton" type="button">Apply Fix</button>
+          <button class="secondary" id="saveFileButton" type="button">Save to File</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="crosshair" id="crosshair" aria-hidden="true"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite">Applied and saved: left 29px, top 707px</div>
+    <div class="copy-panel" id="copyPanel" aria-live="polite">
+      <p>자동 복사가 막혔습니다. 아래 텍스트는 선택된 상태입니다.</p>
+      <input id="copyInput" readonly="">
+    </div>
+    <div class="hint">좌우 방향키: 슬라이드 전환 · 우클릭: 좌표 복사</div>
+
+    <script>
+      const coordsValue = document.getElementById("coordsValue");
+      const crosshair = document.getElementById("crosshair");
+      const toast = document.getElementById("toast");
+      const copyPanel = document.getElementById("copyPanel");
+      const copyInput = document.getElementById("copyInput");
+      const slideStage = document.getElementById("slideStage");
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const coordinateDebuggerPanel = document.getElementById("coordinateDebuggerPanel");
+      const coordinateDebuggerToggle = document.getElementById("coordinateDebuggerToggle");
+      const targetInspectorPanel = document.getElementById("targetInspectorPanel");
+      const targetInspectorToggle = document.getElementById("targetInspectorToggle");
+      const toggleDebuggerVisualsButton = document.getElementById("toggleDebuggerVisualsButton");
+      const targetSelectorInput = document.getElementById("targetSelector");
+      const targetXInput = document.getElementById("targetX");
+      const targetYInput = document.getElementById("targetY");
+      const refreshDebugButton = document.getElementById("refreshDebugButton");
+      const applyDebugButton = document.getElementById("applyDebugButton");
+      const saveFileButton = document.getElementById("saveFileButton");
+      const debugOutline = document.getElementById("debugOutline");
+      const debugParentOutline = document.getElementById("debugParentOutline");
+      const debugTargetPoint = document.getElementById("debugTargetPoint");
+      const debugDesiredPoint = document.getElementById("debugDesiredPoint");
+      const debugResizeHandle = document.getElementById("debugResizeHandle");
+      const POSITION_STORAGE_KEY = "coordinate-debugger:positions:v1";
+
+      let toastTimer;
+      let panelTimer;
+      let currentSlideIndex = Math.max(
+        slides.findIndex((slide) => slide.classList.contains("active")),
+        0
+      );
+      let lastDebugState = null;
+      let dragState = null;
+      let resizeState = null;
+      let currentDraggableTarget = null;
+      let fileHandle = null;
+      let debuggerVisualsEnabled = false;
+      let lastPointerClientX = 0;
+      let lastPointerClientY = 0;
+      const undoStack = [];
+      const redoStack = [];
+
+
+      function formatCoords(x, y) {
+        return `x: ${x}, y: ${y}`;
+      }
+
+      // 6자리 숫자를 x/y로 분리하는 함수
+      function parseSixDigitInput(val) {
+        const str = String(val).replace(/\D/g, "");
+        if (str.length !== 6) return null;
+        const x = parseInt(str.slice(0, 3), 10);
+        const y = parseInt(str.slice(3, 6), 10);
+        return { x, y };
+      }
+
+      function parsePixelValue(value) {
+        const parsed = Number.parseFloat(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+
+      function readSavedPositions() {
+        try {
+          const raw = window.localStorage.getItem(POSITION_STORAGE_KEY);
+          if (!raw) {
+            return {};
+          }
+
+          const parsed = JSON.parse(raw);
+          return parsed && typeof parsed === "object" ? parsed : {};
+        } catch (error) {
+          console.error(error);
+          return {};
+        }
+      }
+
+      function writeSavedPositions(positions) {
+        try {
+          window.localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(positions));
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      function savePositionForSelector(selector, left, top, width, height) {
+        if (!selector) {
+          return;
+        }
+
+        const positions = readSavedPositions();
+        const nextValue = { left, top };
+        if (Number.isFinite(width)) {
+          nextValue.width = width;
+        }
+        if (Number.isFinite(height)) {
+          nextValue.height = height;
+        }
+        positions[selector] = nextValue;
+        writeSavedPositions(positions);
+      }
+
+      function applyPositionToTarget(target, left, top, width, height) {
+        if (!target) {
+          return;
+        }
+
+        target.style.left = `${left}px`;
+        target.style.top = `${top}px`;
+        if (Number.isFinite(width)) {
+          target.style.width = `${width}px`;
+        }
+        if (Number.isFinite(height)) {
+          target.style.height = `${height}px`;
+        }
+      }
+
+      function pushHistoryEntry(selector, before, after) {
+        if (
+          !selector ||
+          !before ||
+          !after ||
+          (
+            before.left === after.left &&
+            before.top === after.top &&
+            before.width === after.width &&
+            before.height === after.height
+          )
+        ) {
+          return;
+        }
+
+        undoStack.push({ selector, before, after });
+        redoStack.length = 0;
+      }
+
+      function restoreHistoryEntry(entry, key) {
+        if (!entry?.selector) {
+          return false;
+        }
+
+        const target = document.querySelector(entry.selector);
+        const position = entry[key];
+        if (!target || !position) {
+          return false;
+        }
+
+        applyPositionToTarget(
+          target,
+          position.left,
+          position.top,
+          position.width,
+          position.height
+        );
+        savePositionForSelector(
+          entry.selector,
+          position.left,
+          position.top,
+          position.width,
+          position.height
+        );
+
+        if (targetSelectorInput.value.trim() === entry.selector) {
+          refreshTargetDebugger();
+        }
+
+        return true;
+      }
+
+      function undoLastMove() {
+        const entry = undoStack.pop();
+        if (!entry) {
+          showToast("되돌릴 이동이 없습니다");
+          return;
+        }
+
+        if (!restoreHistoryEntry(entry, "before")) {
+          undoStack.push(entry);
+          showToast("되돌릴 대상을 찾지 못했습니다");
+          return;
+        }
+
+        redoStack.push(entry);
+        showToast(
+          `Undo: ${Math.round(entry.before.left)}x, ${Math.round(entry.before.top)}y · ${Math.round(entry.before.width)}w, ${Math.round(entry.before.height)}h`
+        );
+      }
+
+      function redoLastMove() {
+        const entry = redoStack.pop();
+        if (!entry) {
+          showToast("다시 적용할 이동이 없습니다");
+          return;
+        }
+
+        if (!restoreHistoryEntry(entry, "after")) {
+          redoStack.push(entry);
+          showToast("다시 적용할 대상을 찾지 못했습니다");
+          return;
+        }
+
+        undoStack.push(entry);
+        showToast(
+          `Redo: ${Math.round(entry.after.left)}x, ${Math.round(entry.after.top)}y · ${Math.round(entry.after.width)}w, ${Math.round(entry.after.height)}h`
+        );
+      }
+
+      function setPanelCollapsed(panel, toggleButton, collapsed) {
+        if (!panel || !toggleButton) {
+          return;
+        }
+
+        panel.classList.toggle("collapsed", collapsed);
+        toggleButton.setAttribute("aria-expanded", String(!collapsed));
+        toggleButton.textContent = collapsed ? "+" : "-";
+      }
+
+      function bindPanelToggle(panel, toggleButton) {
+        if (!panel || !toggleButton) {
+          return;
+        }
+
+        toggleButton.addEventListener("click", () => {
+          setPanelCollapsed(panel, toggleButton, !panel.classList.contains("collapsed"));
+        });
+      }
+
+      function getSavedPosition(selector) {
+        if (!selector) {
+          return null;
+        }
+
+        const positions = readSavedPositions();
+        const value = positions[selector];
+        if (!value) {
+          return null;
+        }
+
+        const left = Number.parseFloat(value.left);
+        const top = Number.parseFloat(value.top);
+        const width = Number.parseFloat(value.width);
+        const height = Number.parseFloat(value.height);
+
+        if (!Number.isFinite(left) || !Number.isFinite(top)) {
+          return null;
+        }
+
+        return {
+          left,
+          top,
+          width: Number.isFinite(width) ? width : undefined,
+          height: Number.isFinite(height) ? height : undefined,
+        };
+      }
+
+      function getStageScale() {
+        const stageRect = slideStage.getBoundingClientRect();
+        return {
+          x: stageRect.width / 1600,
+          y: stageRect.height / 900,
+          rect: stageRect,
+        };
+      }
+
+      function toSlideCoords(clientX, clientY) {
+        const stageScale = getStageScale();
+        return {
+          x: Math.round((clientX - stageScale.rect.left) / stageScale.x),
+          y: Math.round((clientY - stageScale.rect.top) / stageScale.y),
+        };
+      }
+
+      function getElementSlideRect(element) {
+        const stageScale = getStageScale();
+        const rect = element.getBoundingClientRect();
+        return {
+          left: (rect.left - stageScale.rect.left) / stageScale.x,
+          top: (rect.top - stageScale.rect.top) / stageScale.y,
+          width: rect.width / stageScale.x,
+          height: rect.height / stageScale.y,
+        };
+      }
+
+      function applySavedPosition(target, selector) {
+        const saved = getSavedPosition(selector);
+        if (!target || !saved) {
+          return false;
+        }
+
+        applyPositionToTarget(target, saved.left, saved.top, saved.width, saved.height);
+        return true;
+      }
+
+      function setOverlayRect(overlay, rect) {
+        overlay.style.display = "block";
+        overlay.style.left = `${rect.left}px`;
+        overlay.style.top = `${rect.top}px`;
+        overlay.style.width = `${rect.width}px`;
+        overlay.style.height = `${rect.height}px`;
+      }
+
+      function setOverlayPoint(point, x, y) {
+        point.style.display = "block";
+        point.style.left = `${x}px`;
+        point.style.top = `${y}px`;
+      }
+
+      function setResizeHandlePosition(handle, rect) {
+        handle.style.display = "block";
+        handle.style.left = `${rect.left + rect.width}px`;
+        handle.style.top = `${rect.top + rect.height}px`;
+      }
+
+      function hideOverlay(element) {
+        element.style.display = "none";
+      }
+
+      function hideDebuggerVisuals() {
+        hideOverlay(debugOutline);
+        hideOverlay(debugParentOutline);
+        hideOverlay(debugTargetPoint);
+        hideOverlay(debugDesiredPoint);
+        hideOverlay(debugResizeHandle);
+        crosshair.style.display = "none";
+      }
+
+      function setDebuggerVisualsEnabled(enabled) {
+        debuggerVisualsEnabled = enabled;
+        toggleDebuggerVisualsButton.setAttribute("aria-pressed", String(!enabled));
+        toggleDebuggerVisualsButton.textContent = enabled ? "Debugger OFF" : "Debugger ON";
+
+        if (!enabled) {
+          hideDebuggerVisuals();
+          showToast("좌표 디버거 시각화 OFF");
+          return;
+        }
+
+        crosshair.style.display = "block";
+        updatePointer(lastPointerClientX, lastPointerClientY);
+        refreshTargetDebugger();
+        showToast("좌표 디버거 시각화 ON");
+      }
+
+      function describeElement(element) {
+        if (!element) {
+          return "none";
+        }
+
+        const tag = element.tagName.toLowerCase();
+        const id = element.id ? `#${element.id}` : "";
+        const className =
+          typeof element.className === "string" && element.className.trim()
+            ? `.${element.className.trim().split(/\s+/).join(".")}`
+            : "";
+        return `${tag}${id}${className}`;
+      }
+
+      function selectorSegmentForElement(element) {
+        if (element.id) {
+          return `#${CSS.escape(element.id)}`;
+        }
+
+        const tag = element.tagName.toLowerCase();
+        const classNames =
+          typeof element.className === "string" && element.className.trim()
+            ? element.className
+                .trim()
+                .split(/\s+/)
+                .filter((name) => !name.startsWith("debug-"))
+                .slice(0, 2)
+                .map((name) => `.${CSS.escape(name)}`)
+                .join("")
+            : "";
+        const parent = element.parentElement;
+
+        if (!parent) {
+          return `${tag}${classNames}`;
+        }
+
+        const siblings = Array.from(parent.children).filter(
+          (child) => child.tagName === element.tagName
+        );
+        const needsNth = siblings.length > 1;
+        const nth = needsNth ? `:nth-of-type(${siblings.indexOf(element) + 1})` : "";
+
+        return `${tag}${classNames}${nth}`;
+      }
+
+      function buildUniqueSelector(element) {
+        if (!element) {
+          return "";
+        }
+
+        if (element.id) {
+          return `#${CSS.escape(element.id)}`;
+        }
+
+        const parts = [];
+        let current = element;
+
+        while (current && current !== document.body) {
+          parts.unshift(selectorSegmentForElement(current));
+          const selector = parts.join(" > ");
+
+          try {
+            if (document.querySelectorAll(selector).length === 1) {
+              return selector;
+            }
+          } catch (error) {
+            console.error(error);
+          }
+
+          current = current.parentElement;
+        }
+
+        return parts.join(" > ");
+      }
+
+      function isSelectableElement(element) {
+        if (!element || !(element instanceof HTMLElement)) {
+          return false;
+        }
+
+        if (
+          element.closest(".debug-panel") ||
+          element.closest(".hud") ||
+          element.closest(".copy-panel")
+        ) {
+          return false;
+        }
+
+        if (
+          element.id === "debugOutline" ||
+          element.id === "debugParentOutline" ||
+          element.id === "debugTargetPoint" ||
+          element.id === "debugDesiredPoint" ||
+          element.id === "debugResizeHandle" ||
+          element.id === "crosshair"
+        ) {
+          return false;
+        }
+
+        return Boolean(element.closest(".slide"));
+      }
+
+      function selectTargetElement(element) {
+        if (!isSelectableElement(element)) {
+          return false;
+        }
+
+        const selector = buildUniqueSelector(element);
+        if (!selector) {
+          return false;
+        }
+
+        targetSelectorInput.value = selector;
+        applySavedPosition(element, selector);
+        refreshTargetDebugger();
+        return true;
+      }
+
+      function detachDraggableTarget() {
+        if (!currentDraggableTarget) {
+          return;
+        }
+
+        currentDraggableTarget.classList.remove("debug-draggable");
+        currentDraggableTarget = null;
+      }
+
+      function attachDraggableTarget(target) {
+        if (currentDraggableTarget === target) {
+          return;
+        }
+
+        detachDraggableTarget();
+
+        if (!target) {
+          return;
+        }
+
+        currentDraggableTarget = target;
+        currentDraggableTarget.classList.add("debug-draggable");
+      }
+
+      function clearRuntimeStateForSave(root) {
+        root.querySelector("#crosshair")?.removeAttribute("style");
+        root.querySelector("#debugOutline")?.removeAttribute("style");
+        root.querySelector("#debugParentOutline")?.removeAttribute("style");
+        root.querySelector("#debugTargetPoint")?.removeAttribute("style");
+        root.querySelector("#debugDesiredPoint")?.removeAttribute("style");
+        root.querySelector("#debugResizeHandle")?.removeAttribute("style");
+        root.querySelector("#copyPanel")?.removeAttribute("style");
+        root.querySelector("#copyInput")?.removeAttribute("style");
+        root.querySelector("#toast")?.classList.remove("show");
+        root.querySelector("#copyPanel")?.classList.remove("show");
+        root.querySelector("body")?.classList.remove("debug-dragging");
+      }
+
+      function buildHtmlForSave() {
+        if (!lastDebugState?.target) {
+          throw new Error("No target selected");
+        }
+
+        const clone = document.documentElement.cloneNode(true);
+        const cloneDoc = clone.ownerDocument;
+        const clonedTarget = clone.querySelector(lastDebugState.selector);
+
+        if (!clonedTarget) {
+          throw new Error("Target not found in cloned document");
+        }
+
+        applyPositionToTarget(
+          clonedTarget,
+          Math.round(lastDebugState.currentLeft),
+          Math.round(lastDebugState.currentTop),
+          Math.round(lastDebugState.currentWidth),
+          Math.round(lastDebugState.currentHeight)
+        );
+        clearRuntimeStateForSave(clone);
+
+        return `<!DOCTYPE html>\n${clone.outerHTML}\n`;
+      }
+
+      async function pickHtmlFileHandle() {
+        if (!window.showOpenFilePicker) {
+          throw new Error("File System Access API is not supported in this browser");
+        }
+
+        const [handle] = await window.showOpenFilePicker({
+          multiple: false,
+          types: [
+            {
+              description: "HTML files",
+              accept: {
+                "text/html": [".html", ".htm"],
+              },
+            },
+          ],
+        });
+
+        return handle;
+      }
+
+      async function saveCurrentLayoutToFile() {
+        if (!lastDebugState?.target) {
+          refreshTargetDebugger();
+        }
+
+        if (!lastDebugState?.target) {
+          showToast("저장할 대상 요소를 찾지 못했습니다");
+          return;
+        }
+
+        const html = buildHtmlForSave();
+        fileHandle = await pickHtmlFileHandle();
+        const writable = await fileHandle.createWritable();
+        await writable.write(html);
+        await writable.close();
+      }
+
+      function refreshTargetDebugger() {
+        const selector = targetSelectorInput.value.trim();
+        const target = selector ? document.querySelector(selector) : null;
+
+        if (!target) {
+          detachDraggableTarget();
+          hideDebuggerVisuals();
+          lastDebugState = null;
+          return;
+        }
+
+        const desiredX = Number.parseFloat(targetXInput.value) || 0;
+        const desiredY = Number.parseFloat(targetYInput.value) || 0;
+        const targetRect = getElementSlideRect(target);
+        const offsetParent = target.offsetParent || target.parentElement || slideStage;
+        const parentRect = getElementSlideRect(offsetParent);
+        const styles = window.getComputedStyle(target);
+        const currentLeft = parsePixelValue(styles.left);
+        const currentTop = parsePixelValue(styles.top);
+        const currentWidth = targetRect.width;
+        const currentHeight = targetRect.height;
+        const suggestedLeft = Math.round(desiredX - parentRect.left);
+        const suggestedTop = Math.round(desiredY - parentRect.top);
+        attachDraggableTarget(target);
+        if (debuggerVisualsEnabled) {
+          setOverlayRect(debugOutline, targetRect);
+          setOverlayRect(debugParentOutline, parentRect);
+          setOverlayPoint(debugTargetPoint, targetRect.left, targetRect.top);
+          setOverlayPoint(debugDesiredPoint, desiredX, desiredY);
+          setResizeHandlePosition(debugResizeHandle, targetRect);
+        } else {
+          hideDebuggerVisuals();
+        }
+
+        lastDebugState = {
+          target,
+          offsetParent,
+          selector,
+          currentLeft,
+          currentTop,
+          currentWidth,
+          currentHeight,
+          suggestedLeft,
+          suggestedTop,
+          desiredX,
+          desiredY,
+        };
+      }
+
+      function updatePointer(x, y) {
+        lastPointerClientX = x;
+        lastPointerClientY = y;
+        const slideCoords = toSlideCoords(x, y);
+        coordsValue.textContent = `${formatCoords(slideCoords.x, slideCoords.y)} · viewport ${formatCoords(x, y)}`;
+
+        if (!debuggerVisualsEnabled) {
+          crosshair.style.display = "none";
+          return;
+        }
+
+        crosshair.style.display = "block";
+        crosshair.style.left = `${x}px`;
+        crosshair.style.top = `${y}px`;
+      }
+
+      function scaleSlide() {
+        const scale = Math.min(
+          (window.innerWidth - 80) / 1600,
+          (window.innerHeight - 80) / 900,
+          1
+        );
+        slideStage.style.transform = `scale(${Math.max(scale, 0.42)})`;
+        refreshTargetDebugger();
+      }
+
+      function setActiveSlide(nextIndex) {
+        const boundedIndex = Math.max(0, Math.min(nextIndex, slides.length - 1));
+
+        if (boundedIndex === currentSlideIndex) {
+          return;
+        }
+
+        slides[currentSlideIndex]?.classList.remove("active");
+        slides[boundedIndex]?.classList.add("active");
+        currentSlideIndex = boundedIndex;
+
+        const slideLabel = slides[boundedIndex]?.getAttribute("aria-label");
+        if (slideLabel) {
+          showToast(`현재 슬라이드: ${slideLabel}`);
+        }
+
+        refreshTargetDebugger();
+      }
+
+      function beginDrag(event) {
+        if (event.button !== 0) {
+          return;
+        }
+
+        if (resizeState || event.target === debugResizeHandle) {
+          return;
+        }
+
+        const rawTarget =
+          event.target instanceof HTMLElement ? event.target : event.target?.parentElement;
+
+        if (!rawTarget || !isSelectableElement(rawTarget)) {
+          return;
+        }
+
+        if (!lastDebugState?.target || lastDebugState.target !== rawTarget) {
+          if (!selectTargetElement(rawTarget)) {
+            return;
+          }
+        }
+
+        if (!lastDebugState?.target) {
+          return;
+        }
+
+        dragState = {
+          pointerId: event.pointerId,
+          selector: lastDebugState.selector,
+          target: lastDebugState.target,
+          offsetParent: lastDebugState.offsetParent,
+          startPointer: toSlideCoords(event.clientX, event.clientY),
+          startLeft: lastDebugState.currentLeft,
+          startTop: lastDebugState.currentTop,
+          beforePosition: {
+            left: lastDebugState.currentLeft,
+            top: lastDebugState.currentTop,
+            width: lastDebugState.currentWidth,
+            height: lastDebugState.currentHeight,
+          },
+        };
+
+        document.body.classList.add("debug-dragging");
+        dragState.target.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+      }
+
+      function updateDrag(event) {
+        if (!dragState || event.pointerId !== dragState.pointerId) {
+          return;
+        }
+
+        const pointer = toSlideCoords(event.clientX, event.clientY);
+        const nextLeft = Math.round(dragState.startLeft + (pointer.x - dragState.startPointer.x));
+        const nextTop = Math.round(dragState.startTop + (pointer.y - dragState.startPointer.y));
+        const parentRect = getElementSlideRect(dragState.offsetParent);
+
+        applyPositionToTarget(dragState.target, nextLeft, nextTop);
+        targetXInput.value = String(nextLeft + Math.round(parentRect.left));
+        targetYInput.value = String(nextTop + Math.round(parentRect.top));
+        refreshTargetDebugger();
+      }
+
+      function endDrag(event) {
+        if (!dragState || event.pointerId !== dragState.pointerId) {
+          return;
+        }
+
+        const finalLeft = parsePixelValue(dragState.target.style.left);
+        const finalTop = parsePixelValue(dragState.target.style.top);
+
+        pushHistoryEntry(dragState.selector, dragState.beforePosition, {
+          left: finalLeft,
+          top: finalTop,
+          width: lastDebugState?.currentWidth ?? dragState.beforePosition.width,
+          height: lastDebugState?.currentHeight ?? dragState.beforePosition.height,
+        });
+        savePositionForSelector(
+          dragState.selector,
+          finalLeft,
+          finalTop,
+          lastDebugState?.currentWidth ?? dragState.beforePosition.width,
+          lastDebugState?.currentHeight ?? dragState.beforePosition.height
+        );
+        dragState.target.releasePointerCapture?.(event.pointerId);
+        document.body.classList.remove("debug-dragging");
+        dragState = null;
+        refreshTargetDebugger();
+        showToast(`Saved: left ${Math.round(finalLeft)}px, top ${Math.round(finalTop)}px`);
+      }
+
+      function beginResize(event) {
+        if (event.button !== 0 || !lastDebugState?.target) {
+          return;
+        }
+
+        resizeState = {
+          pointerId: event.pointerId,
+          selector: lastDebugState.selector,
+          target: lastDebugState.target,
+          startPointer: toSlideCoords(event.clientX, event.clientY),
+          startLeft: lastDebugState.currentLeft,
+          startTop: lastDebugState.currentTop,
+          startWidth: lastDebugState.currentWidth,
+          startHeight: lastDebugState.currentHeight,
+          beforePosition: {
+            left: lastDebugState.currentLeft,
+            top: lastDebugState.currentTop,
+            width: lastDebugState.currentWidth,
+            height: lastDebugState.currentHeight,
+          },
+        };
+
+        document.body.classList.add("debug-dragging");
+        debugResizeHandle.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      function updateResize(event) {
+        if (!resizeState || event.pointerId !== resizeState.pointerId) {
+          return;
+        }
+
+        const pointer = toSlideCoords(event.clientX, event.clientY);
+        const deltaX = pointer.x - resizeState.startPointer.x;
+        const deltaY = pointer.y - resizeState.startPointer.y;
+        const nextWidth = Math.max(24, Math.round(resizeState.startWidth + deltaX));
+        const nextHeight = Math.max(24, Math.round(resizeState.startHeight + deltaY));
+
+        applyPositionToTarget(
+          resizeState.target,
+          resizeState.startLeft,
+          resizeState.startTop,
+          nextWidth,
+          nextHeight
+        );
+        refreshTargetDebugger();
+      }
+
+      function endResize(event) {
+        if (!resizeState || event.pointerId !== resizeState.pointerId) {
+          return;
+        }
+
+        const selector = resizeState.selector;
+        const target = resizeState.target;
+        const styles = window.getComputedStyle(target);
+        const finalLeft = parsePixelValue(styles.left);
+        const finalTop = parsePixelValue(styles.top);
+        const finalRect = getElementSlideRect(target);
+        const finalWidth = Math.round(finalRect.width);
+        const finalHeight = Math.round(finalRect.height);
+
+        pushHistoryEntry(selector, resizeState.beforePosition, {
+          left: finalLeft,
+          top: finalTop,
+          width: finalWidth,
+          height: finalHeight,
+        });
+        savePositionForSelector(selector, finalLeft, finalTop, finalWidth, finalHeight);
+        debugResizeHandle.releasePointerCapture?.(event.pointerId);
+        document.body.classList.remove("debug-dragging");
+        resizeState = null;
+        refreshTargetDebugger();
+        showToast(`Saved: ${finalWidth}px × ${finalHeight}px`);
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove("show");
+        }, 1400);
+      }
+
+      function showManualCopy(text, x, y) {
+        copyInput.value = text;
+        copyPanel.classList.add("show");
+        copyPanel.style.left = `${Math.min(x + 14, window.innerWidth - copyPanel.offsetWidth - 12)}px`;
+        copyPanel.style.top = `${Math.min(y + 14, window.innerHeight - copyPanel.offsetHeight - 12)}px`;
+        copyInput.focus();
+        copyInput.select();
+        copyInput.setSelectionRange(0, copyInput.value.length);
+        clearTimeout(panelTimer);
+        panelTimer = setTimeout(() => {
+          copyPanel.classList.remove("show");
+        }, 3000);
+      }
+
+      async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+
+        const input = document.createElement("textarea");
+        input.value = text;
+        input.setAttribute("readonly", "");
+        input.style.position = "fixed";
+        input.style.left = "0";
+        input.style.top = "0";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.focus();
+        input.select();
+        input.setSelectionRange(0, input.value.length);
+        const copied = document.execCommand("copy");
+        document.body.removeChild(input);
+
+        if (!copied) {
+          throw new Error("execCommand copy failed");
+        }
+      }
+
+
+      window.addEventListener("mousemove", (event) => {
+        updatePointer(event.clientX, event.clientY);
+      });
+
+      // 좌표 디버거에서 6자리 숫자 입력받기 (x/y 통합)
+      coordsValue.addEventListener("click", () => {
+        const input = prompt("6자리 숫자를 입력하세요 (앞 3자리: X, 뒤 3자리: Y, 예: 908169)");
+        if (!input) return;
+        const parsed = parseSixDigitInput(input);
+        if (parsed) {
+          updatePointer(parsed.x, parsed.y);
+          showToast(`입력 좌표: x: ${parsed.x}, y: ${parsed.y}`);
+        } else {
+          showToast("6자리 숫자를 올바르게 입력하세요");
+        }
+      });
+
+      window.addEventListener("resize", scaleSlide);
+      scaleSlide();
+
+      window.addEventListener("keydown", (event) => {
+        const tagName = document.activeElement?.tagName;
+        const isTypingContext =
+          tagName === "INPUT" ||
+          tagName === "TEXTAREA" ||
+          document.activeElement?.isContentEditable;
+
+        if (isTypingContext) {
+          return;
+        }
+
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          setActiveSlide(currentSlideIndex - 1);
+        }
+
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          setActiveSlide(currentSlideIndex + 1);
+        }
+
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+          event.preventDefault();
+
+          if (event.shiftKey) {
+            redoLastMove();
+            return;
+          }
+
+          undoLastMove();
+        }
+      });
+
+      window.addEventListener("contextmenu", async (event) => {
+        event.preventDefault();
+        const slideCoords = toSlideCoords(event.clientX, event.clientY);
+        const text = formatCoords(slideCoords.x, slideCoords.y);
+        updatePointer(event.clientX, event.clientY);
+
+        try {
+          await copyText(text);
+          copyPanel.classList.remove("show");
+          showToast(`Copied: ${text}`);
+        } catch (error) {
+          showManualCopy(text, event.clientX, event.clientY);
+          showToast("자동 복사 실패, 수동 복사창 표시");
+          console.error(error);
+        }
+      });
+
+      bindPanelToggle(coordinateDebuggerPanel, coordinateDebuggerToggle);
+      bindPanelToggle(targetInspectorPanel, targetInspectorToggle);
+      toggleDebuggerVisualsButton.addEventListener("click", () => {
+        setDebuggerVisualsEnabled(!debuggerVisualsEnabled);
+      });
+      refreshDebugButton.addEventListener("click", refreshTargetDebugger);
+      applyDebugButton.addEventListener("click", () => {
+        if (!lastDebugState?.target) {
+          refreshTargetDebugger();
+          return;
+        }
+
+        pushHistoryEntry(
+          lastDebugState.selector,
+          {
+            left: lastDebugState.currentLeft,
+            top: lastDebugState.currentTop,
+            width: lastDebugState.currentWidth,
+            height: lastDebugState.currentHeight,
+          },
+          {
+            left: lastDebugState.suggestedLeft,
+            top: lastDebugState.suggestedTop,
+            width: lastDebugState.currentWidth,
+            height: lastDebugState.currentHeight,
+          }
+        );
+        applyPositionToTarget(
+          lastDebugState.target,
+          lastDebugState.suggestedLeft,
+          lastDebugState.suggestedTop,
+          lastDebugState.currentWidth,
+          lastDebugState.currentHeight
+        );
+        savePositionForSelector(
+          lastDebugState.selector,
+          lastDebugState.suggestedLeft,
+          lastDebugState.suggestedTop,
+          lastDebugState.currentWidth,
+          lastDebugState.currentHeight
+        );
+        refreshTargetDebugger();
+        showToast(
+          `Applied and saved: left ${lastDebugState.suggestedLeft}px, top ${lastDebugState.suggestedTop}px`
+        );
+      });
+      saveFileButton.addEventListener("click", async () => {
+        try {
+          await saveCurrentLayoutToFile();
+          showToast("index.html 저장 완료");
+        } catch (error) {
+          if (error?.name === "AbortError") {
+            showToast("파일 저장이 취소되었습니다");
+            return;
+          }
+
+          showToast("파일 저장 실패");
+          console.error(error);
+        }
+      });
+
+      targetSelectorInput.addEventListener("input", () => {
+        const selector = targetSelectorInput.value.trim();
+        const target = selector ? document.querySelector(selector) : null;
+        applySavedPosition(target, selector);
+        refreshTargetDebugger();
+      });
+      [targetXInput, targetYInput].forEach((input) => {
+        input.addEventListener("input", refreshTargetDebugger);
+      });
+
+      slides.forEach((slide) => {
+        slide.addEventListener("pointerdown", beginDrag);
+      });
+      debugResizeHandle.addEventListener("pointerdown", beginResize);
+      window.addEventListener("pointermove", updateDrag);
+      window.addEventListener("pointerup", endDrag);
+      window.addEventListener("pointercancel", endDrag);
+      window.addEventListener("pointermove", updateResize);
+      window.addEventListener("pointerup", endResize);
+      window.addEventListener("pointercancel", endResize);
+
+      const initialSelector = targetSelectorInput.value.trim();
+      const initialTarget = initialSelector ? document.querySelector(initialSelector) : null;
+      applySavedPosition(initialTarget, initialSelector);
+      refreshTargetDebugger();
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>
