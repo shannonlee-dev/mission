@@ -1,0 +1,32 @@
+build & install PortAudio locally
+
+
+pip install --upgrade pip setuptools wheel
+curl -L -o portaudio.tgz https://github.com/PortAudio/portaudio/archive/refs/tags/v19.7.0.tar.gz
+tar xf portaudio.tgz
+cd portaudio-19.7.0
+./configure --prefix="$(dirname "$VIRTUAL_ENV")/portaudio-install"
+make -j"$(getconf _NPROCESSORS_ONLN)"
+make install
+cd ..
+
+# install PyAudio against that PortAudio
+
+CPATH="$PWD/portaudio-install/include" \
+LIBRARY_PATH="$PWD/portaudio-install/lib" \
+LD_LIBRARY_PATH="$PWD/portaudio-install/lib" \
+"$VIRTUAL_ENV/bin/python" -m pip install --no-cache-dir pyaudio
+
+
+
+
+or
+
+
+
+
+sudo apt-get install portaudio19-dev python3-dev && pip install pyaudio
+
+
+and
+https://www.youtube.com/watch?v=YBxuFX8KuHE
