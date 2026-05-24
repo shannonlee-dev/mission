@@ -1,0 +1,36 @@
+# Python 관련
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# 가상환경
+.venv/
+venv/
+env/
+
+# 출력 파일들
+home_to_cafe.csv
+home_to_cafe2.csv
+map.png
+map_final.png
+map_final2.png
+complete_df.csv
+
+# IDE 관련
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS 관련
+.DS_Store
+
+# 테스트 관련
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 로그 파일
+*.log
