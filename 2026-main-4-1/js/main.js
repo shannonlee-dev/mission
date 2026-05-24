@@ -3,7 +3,7 @@ const siteConfig = {
   githubReposEndpoint: 'https://api.github.com/users/shannonlee-dev/repos',
   repositoryUrl: 'https://github.com/shannonlee-dev/codyssey_mission/tree/main/2026-main-4-1',
   pagesUrl: 'https://shannonlee-dev.github.io/codyssey_mission/2026-main-4-1/',
-  formspreeEndpoint: '',
+  formspreeEndpoint: 'https://formspree.io/f/xvzyqdro',
   scrollTopThreshold: 300,
   navScrollThreshold: 60,
   observerThreshold: 0.2,
@@ -202,7 +202,6 @@ async function loadProjects() {
 
     const repos = await response.json();
     state.projects = repos
-      .filter(({ fork }) => !fork)
       .sort((a, b) => b.stargazers_count - a.stargazers_count)
       .slice(0, 9);
     state.activeLanguage = 'All';
@@ -259,16 +258,23 @@ async function handleContactSubmit(event) {
     return;
   }
 
-  if (siteConfig.formspreeEndpoint) {
-    await fetch(siteConfig.formspreeEndpoint, {
+  try {
+    const response = await fetch(siteConfig.formspreeEndpoint, {
       method: 'POST',
       headers: { Accept: 'application/json' },
       body: formData,
     });
+
+    if (!response.ok) {
+      throw new Error('Formspree request failed');
+    }
+  } catch (error) {
+    elements.formMessage.textContent = '전송에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+    return;
   }
 
   state.form.submitted = true;
-  elements.formMessage.textContent = '메시지가 준비되었습니다. 확인 후 전송해 주세요.';
+  elements.formMessage.textContent = '전송되었습니다';
   elements.contactForm.reset();
 }
 
