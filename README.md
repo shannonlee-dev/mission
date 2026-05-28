@@ -1,4 +1,4 @@
-# codyssey_mission
+# codyssey-mission
 
 Codyssey 선발/메인 미션 산출물을 한곳에 모아 둔 모노레포입니다.
 
