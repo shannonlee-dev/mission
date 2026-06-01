@@ -1,4 +1,4 @@
 # GO TO...
 ```
-https://github.com/shannonlee-dev/codyssey-6-2.git
+https://github.com/shannonlee-dev/git-ai-assistant.git
 ```
