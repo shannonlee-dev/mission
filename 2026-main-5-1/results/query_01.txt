@@ -1,8 +1,0 @@
-Q01: 서울에 사는 수강생을 가입일 최신순으로 5명까지 확인한다.
-
-student_id	full_name	city	joined_on
-12	Jae Won	Seoul	2024-04-25
-10	Milo Ko	Seoul	2024-04-09
-6	Owen Yoo	Seoul	2024-03-01
-3	Grace Song	Seoul	2024-02-02
-1	Irene Cho	Seoul	2024-01-15

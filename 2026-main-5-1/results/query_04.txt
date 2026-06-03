@@ -1,8 +1,0 @@
-Q04: 카드 결제 내역을 금액 높은 순으로 확인한다.
-
-payment_id	enrollment_id	amount	method
-3	3	150000	card
-12	13	150000	card
-9	10	130000	card
-1	1	120000	card
-6	7	110000	card

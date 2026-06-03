@@ -1,8 +1,0 @@
-Q02: 100000원 이상인 강의를 수강료 높은 순으로 확인한다.
-
-course_id	title	category	fee
-2	Data Dashboard Basics	Data	150000
-7	Tablet Drawing Studio	Creative	130000
-1	Python Starter Lab	Programming	120000
-4	HTML CSS Weekend	Web	110000
-8	Excel Macro Sprint	Productivity	100000

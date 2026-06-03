@@ -1,8 +1,0 @@
-Q12: 평균 강의 수강료보다 비싼 강의를 서브쿼리로 확인한다.
-
-title	category	fee
-Data Dashboard Basics	Data	150000
-Tablet Drawing Studio	Creative	130000
-Python Starter Lab	Programming	120000
-HTML CSS Weekend	Web	110000
-Excel Macro Sprint	Productivity	100000

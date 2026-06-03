@@ -1,4 +1,0 @@
-Q16: DELETE로 결제 없는 취소 신청을 삭제할 때의 영향을 확인하고 롤백한다.
-
-deleted_rows_after_cancel_cleanup
-2

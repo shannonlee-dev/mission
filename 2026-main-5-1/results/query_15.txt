@@ -1,4 +1,0 @@
-Q15: UPDATE로 waitlisted 신청을 active로 바꿀 때의 영향을 확인하고 롤백한다.
-
-updated_rows_after_waitlist_update
-1

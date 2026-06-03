@@ -1,4 +1,0 @@
-ha
-ho
-hi
-eof

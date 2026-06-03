@@ -1,7 +1,0 @@
-table_name,row_count
-instructors,10
-students,12
-courses,11
-enrollments,20
-payments,15
-attendance,20
